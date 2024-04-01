@@ -34,14 +34,9 @@ RUN pip3 install numpy torch torchvision torchaudio --index-url https://download
 # download for amd
 RUN pip3 install pandas yacs PyYAML termcolor Cython tensorboard gdown tabulate mat4py scikit-learn packaging opencv-python matplotlib
 
-# Git 계정 등록
-RUN git config --global user.name "aapdo"
-RUN git config --global user.email "jade04342@gmail.com"
-
 RUN mkdir /root/amd
 
-# 개인 액세스 토큰과 HTTPS 프로토콜을 사용하여 Private Repo Clone
-RUN git clone https://ghp_MS4JygqoumoqtVEeZFygNaaknp2zzrnB4EpUy8@github.com/aapdo/AMD.github.io.git /root/amd
+RUN git clone https://github.com/CSID-DGU/2024-1-OSS-team-7-seven-o-clock.git /root/amd
 
 # docker build -t <imageName> .
 # docker run --gpus all --name <containerName> -d <imageName>
