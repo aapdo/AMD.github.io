@@ -6,7 +6,12 @@
 
 import os
 import torch
-from torch._six import container_abcs, string_classes, int_classes
+# instead of import container_abcs
+import collections.abc
+# instead of import string_classes
+string_classes = str
+# instead of import int_classes
+int_classes = int
 from torch.utils.data import DataLoader
 from fastreid.utils import comm
 
@@ -103,7 +108,7 @@ def fast_batch_collator(batched_inputs):
             out[i] += tensor
         return out
 
-    elif isinstance(elem, container_abcs.Mapping):
+    elif isinstance(elem, collections.abc.Mapping):
         return {key: fast_batch_collator([d[key] for d in batched_inputs]) for key in elem}
 
     elif isinstance(elem, float):

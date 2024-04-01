@@ -27,25 +27,26 @@ class Market1501(ImageDataset):
         - images: 12936 (train) + 3368 (query) + 15913 (gallery).
     """
     _junk_pids = [0, -1]
-    dataset_dir = ''
+    dataset_dir = 'datasets'
     dataset_url = 'http://188.138.127.15:81/Datasets/Market-1501-v15.09.15.zip'
     dataset_name = "market1501"
 
-    def __init__(self, root='datasets', market1501_500k=False, **kwargs):
+    def __init__(self, root='/root/amd/datasets', market1501_500k=False, **kwargs):
         # self.root = osp.abspath(osp.expanduser(root))
-        self.root = root
+        self.root = "/root/amd"
+        # print(f"root dir: {self.root}")
         self.dataset_dir = osp.join(self.root, self.dataset_dir)
 
         # allow alternative directory structure
         self.data_dir = self.dataset_dir
-        data_dir = osp.join(self.data_dir, 'Market1501-1501-v15.09.15')
+        data_dir = osp.join(self.data_dir, 'Market-1501-v15.09.15')
+        # print(f"data dir: {data_dir}")
         if osp.isdir(data_dir):
             self.data_dir = data_dir
         else:
             warnings.warn('The current data structure is deprecated. Please '
                           'put data folders such as "bounding_box_train" under '
                           '"Market1501-1501-v15.09.15".')
-
         self.train_dir = osp.join(self.data_dir, 'bounding_box_train')
         self.query_dir = osp.join(self.data_dir, 'query')
         self.gallery_dir = osp.join(self.data_dir, 'bounding_box_test')

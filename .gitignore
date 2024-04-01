@@ -6,3 +6,4 @@ reid_model/*.mat
 reid_model/*.txt
 
 reid_model/pretrain_models/*
+*.pyc
