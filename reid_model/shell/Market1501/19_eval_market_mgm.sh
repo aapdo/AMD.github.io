@@ -1,0 +1,1 @@
+python ./tools/train_net.py --config-file ./configs/Market1501/mgn_R50-ibn.yml --eval-only MODEL.WEIGHTS /export/home/pretrain_models/market_mgn_R50-ibn.pth MODEL.DEVICE "cuda:0"
