@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.8.0-base-ubuntu22.04
+FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 
 RUN apt-get clean \
 && apt-get update -y \
@@ -29,8 +29,8 @@ RUN python3 -m pip install --upgrade pip
 # cudnn download
 RUN sudo apt-get -y install cudnn-cuda-11
 
-# torch 2.20 download
-RUN pip3 install numpy torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# torch 2.22 download
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 # download for amd
 RUN pip3 install pandas yacs PyYAML termcolor Cython tensorboard gdown tabulate mat4py scikit-learn packaging opencv-python matplotlib
 
