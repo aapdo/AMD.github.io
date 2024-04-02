@@ -8,8 +8,10 @@
 import logging
 import os
 import sys
+import scipy.io
 
 sys.path.append('.')
+#os.chdir("/home/workspace/AMD") #/home/workspace/로 이동하는것 방지 
 
 from fastreid.config import get_cfg
 from projects.InterpretationReID.interpretationreid.engine import DefaultTrainer, default_argument_parser, default_setup, launch
@@ -31,9 +33,6 @@ class Trainer(DefaultTrainer):
         logger.info("Prepare training set")
         return PII.add_build_reid_train_loader(cfg)
 
-
-
-
     @classmethod
     def build_test_loader(cls, cfg, dataset_name):
         """
@@ -43,7 +42,6 @@ class Trainer(DefaultTrainer):
         Overwrite it if you'd like a different data loader.
         """
         return PII.add_build_reid_test_loader(cfg, dataset_name)
-
 
     @classmethod
     def build_evaluator(cls, cfg, num_query, output_folder=None):
