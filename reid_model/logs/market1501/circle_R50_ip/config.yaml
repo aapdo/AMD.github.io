@@ -1,0 +1,197 @@
+CUDNN_BENCHMARK: true
+DATALOADER:
+  ATT_RESAMPLE: false
+  NAIVE_WAY: true
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 6
+  PK_SAMPLER: true
+DATASETS:
+  COMBINEALL: false
+  NAMES:
+  - Market1501_Interpretation
+  TESTS:
+  - Market1501_Interpretation
+INPUT:
+  CJ:
+    BRIGHTNESS: 0.15
+    CONTRAST: 0.15
+    ENABLED: false
+    HUE: 0.1
+    PROB: 0.8
+    SATURATION: 0.1
+  DO_AUGMIX: false
+  DO_AUTOAUG: true
+  DO_FLIP: true
+  DO_PAD: true
+  FLIP_PROB: 0.5
+  PADDING: 10
+  PADDING_MODE: constant
+  REA:
+    ENABLED: true
+    MEAN:
+    - 123.675
+    - 116.28
+    - 103.53
+    PROB: 0.5
+  RPT:
+    ENABLED: false
+    PROB: 0.5
+  SIZE_TEST:
+  - 384
+  - 128
+  SIZE_TRAIN:
+  - 384
+  - 128
+INTERPRETATION:
+  ATT_PRETRAIN_DICT: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
+  FREEZE_LAYERS:
+  - heads
+  - backbone_2
+  - backbone_1
+  I_MODEL:
+    BACKBONE:
+      ADD_PARAMETER: false
+      DEPTH: 50x
+      LAST_STRIDE: 1
+      NAME: build_resnet_backbone
+      NORM: BN
+      NORM_SPLIT: 1
+      PRETRAIN: true
+      PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
+      WITH_IBN: false
+      WITH_NL: false
+      WITH_SE: false
+    HEADS:
+      CLS_LAYER: linear
+      IN_FEAT: 2048
+      MARGIN: 0.15
+      NAME: ADD_AttrHead
+      NECK_FEAT: before
+      NORM: BN
+      NORM_SPLIT: 1
+      NUM_CLASSES: 26
+      POOL_LAYER: fastavgpool
+      REDUCTION_DIM: 512
+      SCALE: 128
+      WITH_BNNECK: false
+  LOSS:
+    att: 10.0
+    att_decay: false
+    att_lamda: 0.0
+    interpretation: 1.0
+    threshold: 0.3
+  MODEL:
+    SHARE_LAYER: 3
+  PRETRAIN_MODEL: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
+MODEL:
+  BACKBONE:
+    DEPTH: 50x
+    LAST_STRIDE: 1
+    NAME: build_resnet_backbone
+    NORM: BN
+    NORM_SPLIT: 1
+    PRETRAIN: true
+    PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
+    WITH_IBN: false
+    WITH_NL: false
+    WITH_SE: false
+  DEVICE: cuda:0
+  FREEZE_LAYERS:
+  - heads
+  - backbone_2
+  - backbone_1
+  HEADS:
+    CLS_LAYER: circleSoftmax
+    IN_FEAT: 2048
+    MARGIN: 0.35
+    NAME: ADD_BNneckHead
+    NECK_FEAT: after
+    NORM: BN
+    NORM_SPLIT: 1
+    NUM_CLASSES: 0
+    POOL_LAYER: gempool
+    REDUCTION_DIM: 512
+    SCALE: 64
+  LOSSES:
+    CE:
+      ALPHA: 0.2
+      EPSILON: 0.0
+      SCALE: 1.0
+    CIRCLE:
+      ALPHA: 128
+      MARGIN: 0.25
+      SCALE: 1.0
+    FL:
+      ALPHA: 0.25
+      GAMMA: 2
+      SCALE: 1.0
+    NAME:
+    - CrossEntropyLoss
+    TRI:
+      HARD_MINING: true
+      MARGIN: 0.0
+      NORM_FEAT: false
+      SCALE: 1.0
+  META_ARCHITECTURE: IRBaseline
+  PIXEL_MEAN:
+  - 123.675
+  - 116.28
+  - 103.53
+  PIXEL_STD:
+  - 58.395
+  - 57.120000000000005
+  - 57.375
+  WEIGHTS: ''
+OUTPUT_DIR: logs/market1501/circle_R50_ip
+SOLVER:
+  AMP_ENABLED: false
+  BASE_LR: 0.0001
+  BIAS_LR_FACTOR: 1.0
+  CHECKPOINT_PERIOD: 10
+  DELAY_ITERS: 90
+  ETA_MIN_LR: 7.7e-07
+  FREEZE_ITERS: 10
+  GAMMA: 0.1
+  HEADS_LR_FACTOR: 1.0
+  IMS_PER_BATCH: 24
+  MAX_ITER: 60
+  MOMENTUM: 0.9
+  OPT: Adam
+  SCHED: WarmupCosineAnnealingLR
+  STEPS:
+  - 40
+  - 90
+  SWA:
+    ENABLED: false
+    ETA_MIN_LR: 3.5e-06
+    ITER: 10
+    LR_FACTOR: 10.0
+    LR_SCHED: false
+    PERIOD: 2
+  WARMUP_FACTOR: 0.01
+  WARMUP_ITERS: 10
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0005
+  WEIGHT_DECAY_BIAS: 0.0005
+TEST:
+  AQE:
+    ALPHA: 3.0
+    ENABLED: false
+    QE_K: 5
+    QE_TIME: 1
+  EVAL_PERIOD: 30
+  IMS_PER_BATCH: 48
+  METRIC: euclidean
+  PRECISE_BN:
+    DATASET: Market1501
+    ENABLED: false
+    NUM_ITER: 300
+  RERANK:
+    ENABLED: false
+    K1: 20
+    K2: 6
+    LAMBDA: 0.3
+  ROC_ENABLED: false
+VISUAL:
+  GAP_QUERY: 100
+  OPEN: false

@@ -27,7 +27,7 @@ DATASETS:
 
 INTERPRETATION:
   FREEZE_LAYERS: ["heads","backbone_2","backbone_1"]
-  PRETRAIN_MODEL: '/root/amd/pretrain_models/market_circle_r50_ip.pth'
+  PRETRAIN_MODEL: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
   ATT_PRETRAIN_DICT: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
 
   MODEL:
