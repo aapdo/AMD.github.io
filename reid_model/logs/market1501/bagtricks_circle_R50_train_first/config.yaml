@@ -49,7 +49,7 @@ MODEL:
     NORM: BN
     NORM_SPLIT: 1
     PRETRAIN: true
-    PRETRAIN_PATH: /root/amd/pretrain_models/market_circle_r50_ip.pth
+    PRETRAIN_PATH: ./pretrain_models/market_circle_r50_ip.pth
     WITH_IBN: false
     WITH_NL: false
     WITH_SE: false
