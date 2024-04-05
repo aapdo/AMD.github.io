@@ -16,7 +16,8 @@ MODEL:
     NAME: "build_resnet_backbone"
     WITH_NL: False
     DEPTH: "50x"
-    PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
+    PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/model_final.pth
+    #PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
 
 DATALOADER:
   ATT_RESAMPLE: False

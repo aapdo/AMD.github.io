@@ -1,16 +1,15 @@
 CUDNN_BENCHMARK: true
 DATALOADER:
-  ATT_RESAMPLE: false
   NAIVE_WAY: true
-  NUM_INSTANCE: 4
-  NUM_WORKERS: 6
+  NUM_INSTANCE: 16
+  NUM_WORKERS: 8
   PK_SAMPLER: true
 DATASETS:
   COMBINEALL: false
   NAMES:
-  - Market1501_Interpretation
+  - Market1501
   TESTS:
-  - Market1501_Interpretation
+  - Market1501
 INPUT:
   CJ:
     BRIGHTNESS: 0.15
@@ -42,47 +41,6 @@ INPUT:
   SIZE_TRAIN:
   - 384
   - 128
-INTERPRETATION:
-  ATT_PRETRAIN_DICT: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
-  FREEZE_LAYERS:
-  - heads
-  - backbone_2
-  - backbone_1
-  I_MODEL:
-    BACKBONE:
-      ADD_PARAMETER: false
-      DEPTH: 50x
-      LAST_STRIDE: 1
-      NAME: build_resnet_backbone
-      NORM: BN
-      NORM_SPLIT: 1
-      PRETRAIN: true
-      PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
-      WITH_IBN: false
-      WITH_NL: false
-      WITH_SE: false
-    HEADS:
-      CLS_LAYER: linear
-      IN_FEAT: 2048
-      MARGIN: 0.15
-      NAME: ADD_AttrHead
-      NECK_FEAT: before
-      NORM: BN
-      NORM_SPLIT: 1
-      NUM_CLASSES: 26
-      POOL_LAYER: fastavgpool
-      REDUCTION_DIM: 512
-      SCALE: 128
-      WITH_BNNECK: false
-  LOSS:
-    att: 10.0
-    att_decay: false
-    att_lamda: 0.0
-    interpretation: 1.0
-    threshold: 0.3
-  MODEL:
-    SHARE_LAYER: 3
-  PRETRAIN_MODEL: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
 MODEL:
   BACKBONE:
     DEPTH: 50x
@@ -91,20 +49,18 @@ MODEL:
     NORM: BN
     NORM_SPLIT: 1
     PRETRAIN: true
-    PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/model_final.pth
+    PRETRAIN_PATH: ./pretrain_models/market_circle_r50_ip.pth
     WITH_IBN: false
     WITH_NL: false
     WITH_SE: false
   DEVICE: cuda:0
   FREEZE_LAYERS:
-  - heads
-  - backbone_2
-  - backbone_1
+  - backbone
   HEADS:
     CLS_LAYER: circleSoftmax
     IN_FEAT: 2048
     MARGIN: 0.35
-    NAME: ADD_BNneckHead
+    NAME: BNneckHead
     NECK_FEAT: after
     NORM: BN
     NORM_SPLIT: 1
@@ -132,7 +88,7 @@ MODEL:
       MARGIN: 0.0
       NORM_FEAT: false
       SCALE: 1.0
-  META_ARCHITECTURE: IRBaseline
+  META_ARCHITECTURE: Baseline
   PIXEL_MEAN:
   - 123.675
   - 116.28
@@ -142,18 +98,18 @@ MODEL:
   - 57.120000000000005
   - 57.375
   WEIGHTS: ''
-OUTPUT_DIR: logs/market1501/circle_R50_ip
+OUTPUT_DIR: logs/market1501/bagtricks_circle_R50
 SOLVER:
   AMP_ENABLED: false
-  BASE_LR: 0.0001
+  BASE_LR: 0.00035
   BIAS_LR_FACTOR: 1.0
   CHECKPOINT_PERIOD: 10
-  DELAY_ITERS: 90
+  DELAY_ITERS: 30
   ETA_MIN_LR: 7.7e-07
   FREEZE_ITERS: 10
   GAMMA: 0.1
   HEADS_LR_FACTOR: 1.0
-  IMS_PER_BATCH: 24
+  IMS_PER_BATCH: 64
   MAX_ITER: 60
   MOMENTUM: 0.9
   OPT: Adam
@@ -179,8 +135,8 @@ TEST:
     ENABLED: false
     QE_K: 5
     QE_TIME: 1
-  EVAL_PERIOD: 30
-  IMS_PER_BATCH: 48
+  EVAL_PERIOD: 10
+  IMS_PER_BATCH: 128
   METRIC: euclidean
   PRECISE_BN:
     DATASET: Market1501
@@ -192,6 +148,3 @@ TEST:
     K2: 6
     LAMBDA: 0.3
   ROC_ENABLED: false
-VISUAL:
-  GAP_QUERY: 100
-  OPEN: false
