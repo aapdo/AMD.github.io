@@ -7,7 +7,7 @@ from contextlib import contextmanager
 import torch
 import copy
 from fastreid.utils.logger import log_every_n_seconds
-
+from fastreid.evaluation.reid_evaluation import ReidEvaluator
 
 class DatasetEvaluator:
     """
@@ -106,6 +106,11 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
 
             outputs_dict = model(inputs)
             outputs = outputs_dict["outputs"]
+            print("===== test_jy =====")
+            print("outputs_dict: ", outputs_dict)
+            print("output: ", outputs)
+            print("===== test_jy =====")
+            
 
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
@@ -144,7 +149,11 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
         )
     )
     results = evaluator.evaluate()
-
+    print("===== test_jy =====")
+    print("isinstance(evaluators, DatasetEvaluator)", isinstance(evaluator, DatasetEvaluator))
+    print("isinstance(evaluators, ReidEvaluator)", isinstance(evaluator, ReidEvaluator))
+    print("evaluator.evalute results: ", results)
+    print("===== test_jy =====")
     #TODO CXD Visualizer
     dist_list_stack,query_real_attributes, gallery_real_attributes = evaluator.visualize() # n x m x NUM_ATT
     dict_q_att = {3:'Reweight with the most contributed attribute, unstable operation!', 4:"Reweight with the most contributed exclusive attribute, stable operation! "}
@@ -160,7 +169,7 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
             #logger.info("*" * 50)
             for q_att in list([list_q_att]):
                 New_results = evaluator.evaluate_dist(dist_list_stack,q_att,p_att,query_real_attributes)
-                #logger.info(" mode={} , p_att={} ".format(q_att,p_att))
+                logger.info(" mode={} , p_att={} ".format(q_att,p_att))
                 #logger.info("{}".format(New_results))
                 if New_results_best is None or New_results['New_Rank-1']>=New_results_best['New_Rank-1']:
                     New_results_best = copy.deepcopy(New_results)
@@ -174,11 +183,11 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
 
 
 
-
-    logger.info("*" * 50)
-    New_results = evaluator.evaluate_dist(dist_list_stack, q_att=None, p_att=None)
-    logger.info("{}".format(New_results))
-    logger.info("*" * 50)
+    # jy
+    #logger.info("*" * 50)
+    #New_results = evaluator.evaluate_dist(dist_list_stack, q_att=None, p_att=None)
+    #logger.info("{}".format(New_results))
+    #logger.info("*" * 50)
 
 
     # An evaluator may return None when not in main process.

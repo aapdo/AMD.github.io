@@ -53,7 +53,7 @@ MODEL:
     WITH_IBN: false
     WITH_NL: false
     WITH_SE: false
-  DEVICE: cuda:0
+  DEVICE: cuda:0, cuda:1, cuda:2
   FREEZE_LAYERS:
   - backbone
   HEADS:
