@@ -139,24 +139,29 @@ class ReidEvaluator(DatasetEvaluator):
 #TODO CXD Visualizer
 
     def explain_eval(self,dist_fake_stack, query_attribute, gallery_attribute, lamda=2.0):
-
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
         _ , num_att = query_attribute.size()
         num_att = float(num_att)
         n, m, _ = dist_fake_stack.size()
 
         dist_real_stack = query_attribute.unsqueeze(1) * gallery_attribute.unsqueeze(
             0)  # -1 means different, 1 means same
-
+        logger.info("log jy: start assert dist_real_stack.size() == dist_fake_stack.size()")
         assert dist_real_stack.size() == dist_fake_stack.size()
+        logger.info("log jy: end assert dist_real_stack.size() == dist_fake_stack.size()")
         dist_real_stack_01 = (1.0 - dist_real_stack) / 2.0  # 1 means different, 0 means same
         dist_real_stack_01_reverse = 1.0 - dist_real_stack_01  # 0 means different, 1 means same
 
         dist_num_different = dist_real_stack_01.sum(-1)  # n x m
         dist_num_same = dist_real_stack_01_reverse.sum(-1)  # n x m
 
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
+        logger.info("log jy: start calculate dist_fake_stack")
         # dist_fake_stack belong to 0.0~1.0
         dist_fake_stack = dist_fake_stack / dist_fake_stack.sum(-1).unsqueeze(-1)  # n x m x num_att
 
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
+        logger.info("log jy: start calcuate Precsion of different attribute")
         # calcuate Precsion of different attribute
         dist_fake_att_different = dist_fake_stack.argsort(dim=-1, descending=True)
         dist_fake_att = (dist_fake_att_different.argsort(dim=-1, descending=False) < dist_num_different.unsqueeze(
@@ -172,22 +177,33 @@ class ReidEvaluator(DatasetEvaluator):
         self._results["Ex_Precsion_d"] = float(Precsion_different)
         # print(dist_fake_att_different)
 
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
+        logger.info("log jy: start calcuate Precsion of same attribute")
         # calcuate Precsion of same attribute
         dist_same_equal_numatt = (dist_num_same.unsqueeze(-1) == num_att).float()  # n x m x 1
         dist_overflow = (dist_fake_stack > lamda / num_att).float() * dist_same_equal_numatt
         dist_fake_att_same = dist_fake_stack.argsort(dim=-1, descending=False)
         dist_fake_att = (dist_fake_att_same.argsort(dim=-1, descending=False) < dist_num_same.unsqueeze(
             -1)).float() - dist_overflow  # n x m x num_att
+        logger.info("log jy: end calcuate Precsion of same attribute")
 
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
+        logger.info("log jy: start calcuate Precsion of same all attribute")
         Precsion_same_allatt = (dist_fake_att * dist_real_stack_01_reverse).sum(0).sum(0)/dist_real_stack_01_reverse.sum(0).sum(0)
         self._results["same_0"] = float(0.0)
         for i in range(Precsion_different_allatt.size(0)):
             self._results["same_"+str(i+1)+"_"+self.key_attribute[i]] = float(Precsion_same_allatt[i])
+        logger.info("log jy: end calcuate Precsion of same all attribute")
 
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
+        logger.info("log jy: start calcuate last Precsion of same")
         Precsion_same = (dist_fake_att * dist_real_stack_01_reverse).sum(-1) / dist_num_same.clamp(min=1.0)
         Precsion_same = Precsion_same.sum() / (n * m - (dist_num_same == 0).float().sum()).clamp(min=1.0)
         self._results["Ex_Precsion_s"] = float(Precsion_same)
+        logger.info("log jy: end calcuate last Precsion of same")
 
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
+        logger.info("log jy: start calcuate raw_cmc")
         # print(dist_fake_att_different[0,0])
         raw_cmc = dist_real_stack_01[torch.tensor(range(n)).reshape(-1, 1, 1), torch.tensor(range(m)).reshape(1, -1,
                                                                                                               1), dist_fake_att_different.reshape(
@@ -201,6 +217,8 @@ class ReidEvaluator(DatasetEvaluator):
         dist_same_equal_numatt = -2 * (dist_same_equal_numatt - 0.5)  # -1 means same attribute == num_att
         dist_fake_att_same = (dist_fake_stack * dist_same_equal_numatt).argsort(dim=-1, descending=False)
 
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
+        logger.info("log jy: start calcuate raw_cmc 2")
         raw_cmc = (dist_real_stack_01_reverse - dist_overflow)[
             torch.tensor(range(n)).reshape(-1, 1, 1), torch.tensor(range(m)).reshape(1, -1,
                                                                                      1), dist_fake_att_same.reshape(n,
@@ -212,6 +230,8 @@ class ReidEvaluator(DatasetEvaluator):
         tmp_cmc = tmp_cmc / div_cmc * raw_cmc
         AP_s = tmp_cmc.sum(dim=-1) / dist_num_same.clamp(min=1)
 
+        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
+        logger.info("log jy: start calculate result")
         self._results["Ex_mAP_d"] = AP_d.sum() / (n * m - (dist_num_different == 0).float().sum()).clamp(min=1.0)
         self._results["Ex_mAP_s"] = AP_s.sum() / (n * m - (dist_num_same == 0).float().sum()).clamp(min=1.0)
 

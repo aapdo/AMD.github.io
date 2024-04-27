@@ -180,7 +180,7 @@ TEST:
     QE_K: 5
     QE_TIME: 1
   EVAL_PERIOD: 30
-  IMS_PER_BATCH: 48
+  IMS_PER_BATCH: 12
   METRIC: euclidean
   PRECISE_BN:
     DATASET: Market1501

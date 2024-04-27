@@ -53,7 +53,9 @@ SOLVER:
 
 TEST:
   EVAL_PERIOD: 30
-  IMS_PER_BATCH: 48
+  # 48 -> 24 24.04.26
+  # 24 -> 12 24.04.27
+  IMS_PER_BATCH: 12 
   METRIC: "euclidean"
 
 CUDNN_BENCHMARK: True
