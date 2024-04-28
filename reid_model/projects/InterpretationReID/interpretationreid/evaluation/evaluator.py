@@ -155,10 +155,10 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
     logger.info("evaluator.evalute results: ", results)
     logger.info("===== test_jy =====")
     #TODO CXD Visualizer
+    
     dist_list_stack,query_real_attributes, gallery_real_attributes = evaluator.visualize() # n x m x NUM_ATT
     dict_q_att = {3:'Reweight with the most contributed attribute, unstable operation!', 4:"Reweight with the most contributed exclusive attribute, stable operation! "}
-    
-    logger.info("log jy: start eval dist")
+    logger.info(f"log jy: start eval dist, {torch.cuda.memory_summary()}")
     for list_q_att in list([3,4]):
         logger.info("*" * 50)
         logger.info("Orginal Results: {}".format(results))
@@ -179,7 +179,7 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
         logger.info("*" * 50)
         logger.info("mode = {}, New Reweight Results = {}".format(dict_q_att[q_att],New_results_best))
         logger.info("*" * 50)
-    logger.info("log jy: end eval dist")
+    logger.info(f"log jy: end eval dist, {torch.cuda.memory_summary()}")
 
 
 
@@ -194,9 +194,9 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
 
     # An evaluator may return None when not in main process.
     # Replace it by an empty dict instead to make it easier for downstream code to handle
-    logger.info("log jy: start explain eval")
+    logger.info(f"log jy: start explain eval, {torch.cuda.memory_summary()}")
     explain_result = evaluator.explain_eval(dist_list_stack, query_real_attributes, gallery_real_attributes, lamda=2.0)
-    logger.info("log jy: end explain eval")
+    logger.info(f"log jy: end explain eval, {torch.cuda.memory_summary()}")
 
 
     if results is None:
