@@ -5,7 +5,8 @@ import mat4py
 import re
 import os
 import csv
-import matplot
+# import matplot as plt
+import matplotlib.pyplot as plt
 
 cur_path = "./label_statistics"
 
@@ -111,12 +112,51 @@ def get_correct_origin_diff(correct_label_df, mat_attribute_df):
 
     return total_label_number, correct_img_number, cnt_correct_attr
 
-def draw_graph(total_label_number, correct_img_number, cnt_correct_attr):
+def draw_pie_chart(labels, sizes, title, chart_name):
+    fig, ax = plt.subplots()
+    # autopct: 조각의 비율
+    # startangle: 시작하는 각도
+    # shadow: 그림자
+    # explode: 특정 조각을 돌출
+    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, shadow=False)
+    ax.axis('equal')  # 원형을 유지하기 위해 설정
+    plt.title(title)
+
+    plt.savefig(cur_path + "/" + chart_name + ".png")
+    plt.close(fig)
+
+
+def draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr):
     '''
     2. 전체 라벨 중 수정한 비율이 얼마나 되는지
     3. 수정 후 속성 분포가 어떻게 되는지
     4. 각 속성별로 수정된 비율이 얼마나 되는지
     '''
+
+    # 전체에서 수정된 비율
+    labels = ['Unmodified Attributes', 'Modified Attributes']
+
+    title = "Ratio of Attributes Modified by One or More"
+    chart_name = "all_modification_ratio"
+    modified_ratio = correct_img_number / total_label_number * 100
+    sizes = [100-modified_ratio, modified_ratio]
+    draw_pie_chart(labels=labels, sizes=sizes, title=title, chart_name=chart_name)
+
+    # 상의가 수정된 비율
+    title = "Ratio of Modified Upper Attributes"
+    chart_name = "upper_modification_ratio"
+    cnt_modified_upper = cnt_correct_attr['upblack'] + cnt_correct_attr['upblue'] + cnt_correct_attr['upgreen'] + cnt_correct_attr['upgray'] + cnt_correct_attr['uppurple'] + cnt_correct_attr['upred'] + cnt_correct_attr['upwhite'] + cnt_correct_attr['upyellow'] + cnt_correct_attr['up']
+    modified_ratio = cnt_modified_upper / total_label_number * 100
+    sizes = [100-modified_ratio, modified_ratio]
+    draw_pie_chart(labels=labels, sizes=sizes, title=title, chart_name=chart_name)
+
+    # 하의가 수정된 비율
+    title = "Ratio of Modified Lower Attributes"
+    chart_name = "lower_modification_ratio"
+    cnt_modified_lower = cnt_correct_attr['downblack'] + cnt_correct_attr['downblue'] + cnt_correct_attr['downbrown'] + cnt_correct_attr['downgray'] + cnt_correct_attr['downpurple'] + cnt_correct_attr['downgreen'] + cnt_correct_attr['downwhite'] + cnt_correct_attr['downyellow'] + cnt_correct_attr['downpink'] + cnt_correct_attr['down']
+    modified_ratio = cnt_modified_lower / total_label_number * 100
+    sizes = [100-modified_ratio, modified_ratio]
+    draw_pie_chart(labels=labels, sizes=sizes, title=title, chart_name=chart_name)
 
     return
 
@@ -139,6 +179,15 @@ if __name__ == '__main__':
     '''
 
     correct_label_df = pd.read_excel(correct_label_file_path)
+
+    # origin_img_name을 제외한 모든 열을 정수형으로 변환
+    columns_to_convert = correct_label_df.columns.drop('origin_img_name')  # origin_img_name 제외
+    correct_label_df[columns_to_convert] = correct_label_df[columns_to_convert].apply(pd.to_numeric, downcast='integer', errors='coerce')
+
+    #nan_in_rows = correct_label_df.isna().any(axis=1)
+    #nan_rows = correct_label_df[nan_in_rows]
+    #print("NaN이 있는 행:\n", nan_rows)
+
     mat_attribute_train, mat_attribute_test, train_indexes, test_indexes = load_mat_attr(mat_file_path)
 
     # train + test attribute
@@ -147,4 +196,10 @@ if __name__ == '__main__':
 
     total_label_number, correct_img_number, cnt_correct_attr = get_correct_origin_diff(correct_label_df, mat_attribute)
 
+    draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr)
+
+    print("전체 검토한 사진: ", total_label_number)
+    print("수정한 사진의 수: ", correct_img_number)
+
+    print(correct_label_df)
     
