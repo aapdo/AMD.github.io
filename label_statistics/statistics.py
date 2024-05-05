@@ -67,23 +67,23 @@ def get_correct_origin_diff(correct_label_df, mat_attribute_df):
         'backpack': 0,
         'bag': 0,
         'handbag': 0,
-        'downblack': 0,
-        'downblue': 0,
-        'downbrown': 0,
-        'downgray': 0,
-        'downgreen': 0,
-        'downpink': 0,
-        'downpurple': 0,
-        'downwhite': 0,
-        'downyellow': 0,
-        'upblack': 0,
-        'upblue': 0,
-        'upgreen': 0,
-        'upgray': 0,
-        'uppurple': 0,
-        'upred': 0,
-        'upwhite': 0,
-        'upyellow': 0,
+        'down-black': 0,
+        'down-blue': 0,
+        'down-brown': 0,
+        'down-gray': 0,
+        'down-green': 0,
+        'down-pink': 0,
+        'down-purple': 0,
+        'down-white': 0,
+        'down-yellow': 0,
+        'up-black': 0,
+        'up-blue': 0,
+        'up-green': 0,
+        'up-gray': 0,
+        'up-purple': 0,
+        'up-red': 0,
+        'up-white': 0,
+        'up-yellow': 0,
         'clothes': 0,
         'down': 0,
         'up': 0,
@@ -125,7 +125,6 @@ def draw_pie_chart(labels, sizes, title, chart_name):
     plt.savefig(cur_path + "/" + chart_name + ".png")
     plt.close(fig)
 
-
 def draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr):
     '''
     2. 전체 라벨 중 수정한 비율이 얼마나 되는지
@@ -145,7 +144,7 @@ def draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_co
     # 상의가 수정된 비율
     title = "Ratio of Modified Upper Attributes"
     chart_name = "upper_modification_ratio"
-    cnt_modified_upper = cnt_correct_attr['upblack'] + cnt_correct_attr['upblue'] + cnt_correct_attr['upgreen'] + cnt_correct_attr['upgray'] + cnt_correct_attr['uppurple'] + cnt_correct_attr['upred'] + cnt_correct_attr['upwhite'] + cnt_correct_attr['upyellow'] + cnt_correct_attr['up']
+    cnt_modified_upper = cnt_correct_attr['up-black'] + cnt_correct_attr['up-blue'] + cnt_correct_attr['up-green'] + cnt_correct_attr['up-gray'] + cnt_correct_attr['up-purple'] + cnt_correct_attr['up-red'] + cnt_correct_attr['up-white'] + cnt_correct_attr['up-yellow'] + cnt_correct_attr['up']
     modified_ratio = cnt_modified_upper / total_label_number * 100
     sizes = [100-modified_ratio, modified_ratio]
     draw_pie_chart(labels=labels, sizes=sizes, title=title, chart_name=chart_name)
@@ -153,12 +152,90 @@ def draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_co
     # 하의가 수정된 비율
     title = "Ratio of Modified Lower Attributes"
     chart_name = "lower_modification_ratio"
-    cnt_modified_lower = cnt_correct_attr['downblack'] + cnt_correct_attr['downblue'] + cnt_correct_attr['downbrown'] + cnt_correct_attr['downgray'] + cnt_correct_attr['downpurple'] + cnt_correct_attr['downgreen'] + cnt_correct_attr['downwhite'] + cnt_correct_attr['downyellow'] + cnt_correct_attr['downpink'] + cnt_correct_attr['down']
+    cnt_modified_lower = cnt_correct_attr['down-black'] + cnt_correct_attr['down-blue'] + cnt_correct_attr['down-brown'] + cnt_correct_attr['down-gray'] + cnt_correct_attr['down-purple'] + cnt_correct_attr['down-green'] + cnt_correct_attr['down-white'] + cnt_correct_attr['down-yellow'] + cnt_correct_attr['down-pink'] + cnt_correct_attr['down']
     modified_ratio = cnt_modified_lower / total_label_number * 100
     sizes = [100-modified_ratio, modified_ratio]
     draw_pie_chart(labels=labels, sizes=sizes, title=title, chart_name=chart_name)
 
-    return
+def draw_bar_chat_attribute_distribution(total_label_number, correct_label_df):
+    cnt_correct_attr = {
+        'backpack': 0,
+        'bag': 0,
+        'handbag': 0,
+        'down-black': 0,
+        'down-blue': 0,
+        'down-brown': 0,
+        'down-gray': 0,
+        'down-green': 0,
+        'down-pink': 0,
+        'down-purple': 0,
+        'down-white': 0,
+        'down-yellow': 0,
+        'up-black': 0,
+        'up-blue': 0,
+        'up-green': 0,
+        'up-gray': 0,
+        'up-purple': 0,
+        'up-red': 0,
+        'up-white': 0,
+        'up-yellow': 0,
+        'hat': 0,
+
+        'gender-male': 0,
+        'long-uppper': 0,
+        'long-hair': 0,    
+    }
+    '''
+        머리 긴거로 세기
+        윗옷 긴거로 세기
+        성별 남자로 세기
+        down, age, clothes 없앰
+
+        1, 2번이 의미가 다른거:
+            up: 1번이면 카운트
+            hair: 2번이면 카운트
+            gender: 1번이면 카운트
+
+    '''
+    subset_df = correct_label_df[['up', 'hair', 'gender']]
+    correct_label_df.drop(['age', 'clothes', 'down', 'up', 'hair', 'gender', 'origin_img_name'], axis=1, inplace=True)
+
+    # DataFrame에서 각 속성의 개수 세기
+    #for index, row in correct_label_df.iterrows():
+    for col in correct_label_df.columns:
+        count_2 = correct_label_df[col].value_counts()[2]
+        cnt_correct_attr[col] = (count_2 / total_label_number)
+        # if correct_label_df
+    for col in subset_df:
+        if col == "up":
+            count_1 = subset_df[col].value_counts()[1]
+            cnt_correct_attr['long-uppper'] = (count_1 / total_label_number)
+        elif col == "gender":
+            count_1 = subset_df[col].value_counts()[1]
+            cnt_correct_attr['long-hair'] = (count_1 / total_label_number)
+        else:
+            count_2 = subset_df[col].value_counts()[2]
+            cnt_correct_attr['gender-male'] = (count_2 / total_label_number)
+
+    # 막대 그래프 그리기
+    fig, ax = plt.subplots(figsize=(10, 5))
+    categories = list(cnt_correct_attr.keys())
+    values = list(cnt_correct_attr.values())
+
+    # 수평 막대 그래프 그리기, 색상 및 너비 조정
+    ax.barh(categories, values, color='skyblue', height=0.5)  # 높이 조정
+
+    # 제목 및 라벨 추가
+    plt.title('Statistics of Corrected Attributes in Market1501')
+    plt.xlabel('Ratios in All Samples')
+    plt.ylabel('Attributes')
+
+    # x축의 범위 설정
+    plt.xlim(0, 1)
+
+    # 그래프 표시
+    plt.savefig(cur_path + "/" + "all_attr_ratio_bar" + ".png")
+    plt.close(fig)
 
 if __name__ == '__main__':
     mat_file_path = cur_path + "/market_attribute.mat"
@@ -194,12 +271,31 @@ if __name__ == '__main__':
     mat_attribute = pd.concat([mat_attribute_train, mat_attribute_test], axis=0).sort_index() 
     mat_attribute = mat_attribute.drop(columns=['image_index'])
 
+    mat_attribute.rename(columns={
+        'downblack': 'down-black', 
+        'downblue': 'down-blue',
+        'downbrown': 'down-brown', 
+        'downgray': 'down-gray', 
+        'downgreen': 'down-green', 
+        'downpink': 'down-pink', 
+        'downpurple': 'down-purple',
+        'downwhite': 'down-white', 
+        'downyellow': 'down-yellow', 
+        'upblack': 'up-black', 
+        'upblue': 'up-blue', 
+        'upgreen': 'up-green', 
+        'upgray': 'up-gray',
+        'uppurple': 'up-purple', 
+        'upred': 'up-red', 
+        'upwhite': 'up-white', 
+        'upyellow': 'up-yellow',
+    }, inplace=True)
+
     total_label_number, correct_img_number, cnt_correct_attr = get_correct_origin_diff(correct_label_df, mat_attribute)
 
-    draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr)
+    # draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr)
 
     print("전체 검토한 사진: ", total_label_number)
     print("수정한 사진의 수: ", correct_img_number)
 
-    print(correct_label_df)
-    
+    draw_bar_chat_attribute_distribution(total_label_number, correct_label_df)
