@@ -57,7 +57,7 @@ INTERPRETATION:
       NORM: BN
       NORM_SPLIT: 1
       PRETRAIN: true
-      PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
+      PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/resnet50-19c8e357.pth
       WITH_IBN: false
       WITH_NL: false
       WITH_SE: false
@@ -82,7 +82,7 @@ INTERPRETATION:
     threshold: 0.3
   MODEL:
     SHARE_LAYER: 3
-  PRETRAIN_MODEL: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
+  PRETRAIN_MODEL: /root/amd/reid_model/pretrain_models/bagtricks_circle_R50/model_final.pth
 MODEL:
   BACKBONE:
     DEPTH: 50x
@@ -91,7 +91,7 @@ MODEL:
     NORM: BN
     NORM_SPLIT: 1
     PRETRAIN: true
-    PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/model_final.pth
+    PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/resnet50-19c8e357.pth
     WITH_IBN: false
     WITH_NL: false
     WITH_SE: false

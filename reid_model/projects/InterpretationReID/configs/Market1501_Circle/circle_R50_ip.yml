@@ -16,8 +16,8 @@ MODEL:
     NAME: "build_resnet_backbone"
     WITH_NL: False
     DEPTH: "50x"
-    PRETRAIN_PATH: /root/amd/reid_model/pretrain_models/model_final.pth
-    #PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
+    # PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth' sk
+    PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/resnet50-19c8e357.pth'
 
 DATALOADER:
   ATT_RESAMPLE: False
@@ -28,8 +28,8 @@ DATASETS:
 
 INTERPRETATION:
   FREEZE_LAYERS: ["heads","backbone_2","backbone_1"]
-  PRETRAIN_MODEL: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
-  ATT_PRETRAIN_DICT: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
+  PRETRAIN_MODEL: '/root/amd/reid_model/pretrain_models/bagtricks_circle_R50/model_final.pth'
+  # ATT_PRETRAIN_DICT: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
 
   MODEL:
     SHARE_LAYER: 3
@@ -58,7 +58,7 @@ INTERPRETATION:
       # If use ImageNet pretrain model
       PRETRAIN: True
       # Pretrain model path
-      PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth'
+      PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/resnet50-19c8e357.pth'
 
     HEADS:
       # Number of identity
