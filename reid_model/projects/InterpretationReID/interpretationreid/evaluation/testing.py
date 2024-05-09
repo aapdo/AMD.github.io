@@ -1,14 +1,15 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import logging
 import pprint
-import sys
-# from collections import Mapping, OrderedDict
-from collections.abc import Mapping
-from collections import OrderedDict
+import sys, os
+import csv
+from collections import Mapping, OrderedDict
 
 import numpy as np
 from tabulate import tabulate
 from termcolor import colored
+
+#from .reid_evaluation import abc_test
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +37,19 @@ def print_csv_format(results):
         headers=metrics,
         numalign="left",
     )
-
+    ###자동화
+    a_list=[]
+    for i in csv_results[0]:
+        a_list.append(i)
     logger.info("Evaluation results in csv format: \n" + colored(table, "cyan"))
+    f=open('/home/workspace/AMD/output/output.csv','a',encoding='utf-8',newline='')
+    wr=csv.writer(f)
+    wr.writerow(metrics)
+    wr.writerow(a_list)
+    wr.writerow("")
+    wr.writerow("")
+    ###
+
 
 
 def verify_results(cfg, results):

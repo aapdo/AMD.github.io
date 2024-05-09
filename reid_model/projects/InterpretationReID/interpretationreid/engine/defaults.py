@@ -44,13 +44,16 @@ def default_argument_parser():
         argparse.ArgumentParser:
     """
     parser = argparse.ArgumentParser(description="fastreid Training")
-    parser.add_argument("--config-file", default="", metavar="FILE", help="path to config file")
+    #마켓 1501
+    parser.add_argument("--config-file", default="/root/amd/reid/projects/InterpretationReID/configs/Market1501_Circle/circle_R50_ip.yml", metavar="FILE", help="path to config file")
+    #듀크 
+    #parser.add_argument("--config-file", default="/root/amd/reid/projects/InterpretationReID/configs/DukeMTMC_Circle/circle_R50_ip.yml", metavar="FILE", help="path to config file")
     parser.add_argument(
         "--resume",
         action="store_true",
         help="whether to attempt to resume from the checkpoint directory",
     )
-    parser.add_argument("--eval-only", action="store_true", help="perform evaluation only")
+    parser.add_argument("--eval-only", default=1,action="store_true", help="perform evaluation only")
     parser.add_argument("--num-gpus", type=int, default=1, help="number of gpus *per machine*")
     parser.add_argument("--num-machines", type=int, default=1, help="total number of machines")
     parser.add_argument(

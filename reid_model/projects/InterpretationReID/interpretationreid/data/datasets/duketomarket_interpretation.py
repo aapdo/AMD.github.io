@@ -63,13 +63,13 @@ class DukeToMarket_Interpretation(ImageDataset):
 
         # allow alternative directory structure
         self.data_dir = self.dataset_dir
-        data_dir = osp.join(self.data_dir, 'Market1501-1501-v15.09.15')
+        data_dir = osp.join(self.data_dir, 'Market1501')
         if osp.isdir(data_dir):
             self.data_dir = data_dir
         else:
             warnings.warn('The current data structure is deprecated. Please '
                           'put data folders such as "bounding_box_train" under '
-                          '"Market1501-1501-v15.09.15".')
+                          '"Market1501".')
 
         self.train_dir = osp.join(self.data_dir, 'bounding_box_train')
         self.query_dir = osp.join(self.data_dir, 'query')

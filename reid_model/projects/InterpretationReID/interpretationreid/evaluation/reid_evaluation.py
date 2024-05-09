@@ -24,6 +24,11 @@ import os
 import random
 from multiprocessing import Pool,Process
 import time
+import scipy.io
+
+import shutil
+import csv
+
 logger = logging.getLogger(__name__)
 
 
@@ -139,34 +144,29 @@ class ReidEvaluator(DatasetEvaluator):
 #TODO CXD Visualizer
 
     def explain_eval(self,dist_fake_stack, query_attribute, gallery_attribute, lamda=2.0):
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
         _ , num_att = query_attribute.size()
         num_att = float(num_att)
         n, m, _ = dist_fake_stack.size()
 
-        dist_real_stack = query_attribute.unsqueeze(1) * gallery_attribute.unsqueeze(
-            0)  # -1 means different, 1 means same
-        logger.info("log jy: start assert dist_real_stack.size() == dist_fake_stack.size()")
+        dist_real_stack = query_attribute.unsqueeze(1) * gallery_attribute.unsqueeze(0)  # -1 means different, 1 means same
+
         assert dist_real_stack.size() == dist_fake_stack.size()
-        logger.info("log jy: end assert dist_real_stack.size() == dist_fake_stack.size()")
         dist_real_stack_01 = (1.0 - dist_real_stack) / 2.0  # 1 means different, 0 means same
         dist_real_stack_01_reverse = 1.0 - dist_real_stack_01  # 0 means different, 1 means same
 
         dist_num_different = dist_real_stack_01.sum(-1)  # n x m
         dist_num_same = dist_real_stack_01_reverse.sum(-1)  # n x m
 
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
-        logger.info("log jy: start calculate dist_fake_stack")
         # dist_fake_stack belong to 0.0~1.0
         dist_fake_stack = dist_fake_stack / dist_fake_stack.sum(-1).unsqueeze(-1)  # n x m x num_att
 
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
-        logger.info("log jy: start calcuate Precsion of different attribute")
         # calcuate Precsion of different attribute
         dist_fake_att_different = dist_fake_stack.argsort(dim=-1, descending=True)
         dist_fake_att = (dist_fake_att_different.argsort(dim=-1, descending=False) < dist_num_different.unsqueeze(
             -1)).float()  # n x m x num_att
-
+        ### 임시 출력
+        #print(dist_fake_att)
+    
         Precsion_different_allatt = (dist_fake_att * dist_real_stack_01).sum(0).sum(0)/dist_real_stack_01.sum(0).sum(0)
         self._results["diff_0"] = float(0.0)
         for i in range(Precsion_different_allatt.size(0)):
@@ -177,36 +177,151 @@ class ReidEvaluator(DatasetEvaluator):
         self._results["Ex_Precsion_d"] = float(Precsion_different)
         # print(dist_fake_att_different)
 
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
-        logger.info("log jy: start calcuate Precsion of same attribute")
         # calcuate Precsion of same attribute
         dist_same_equal_numatt = (dist_num_same.unsqueeze(-1) == num_att).float()  # n x m x 1
         dist_overflow = (dist_fake_stack > lamda / num_att).float() * dist_same_equal_numatt
-        dist_fake_att_same = dist_fake_stack.argsort(dim=-1, descending=False)
-        dist_fake_att = (dist_fake_att_same.argsort(dim=-1, descending=False) < dist_num_same.unsqueeze(
+        dist_fake_att_same = dist_fake_stack.argsort(dim=-1, descending=False) # 갤러리 속성정보 
+        dist_fake_att = (dist_fake_att_same.argsort(dim=-1, descending=False) < dist_num_same.unsqueeze(  #갤러리 쿼리 비교해서 라벨링된 값 비교해서 몇개나 같은지 
             -1)).float() - dist_overflow  # n x m x num_att
-        logger.info("log jy: end calcuate Precsion of same attribute")
+       
+       
+        ### 자동화
 
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
-        logger.info("log jy: start calcuate Precsion of same all attribute")
+        # for i in self.imgs_path:
+        #     print(i)
+
+        # f=open('/home/workspace/AMD/output/output.csv','a',encoding='utf-8',newline='')
+        # wr=csv.writer(f)
+        # #list_other9=[x+1 for x in dist_fake_att_same.tolist()[0][0]]
+        # #list_same1=[x+1 for x in dist_fake_att_same.tolist()[0][-1]]
+
+        # list_gt=dist_fake_att_same.tolist()[0]
+
+        # up_color_dict={18:"black",19:"blue",20:"gray",21:"green",22:"purple",23:"red",24:"white",25:"yellow"}
+        # down_color_dict={4:"black",5:"blue",6:"brown",7:"gray",8:"green",9:"pink",10:"purple",11:"white",12:"yellow"}
+
+        
+        # countx=1 # imgs_path[0]은 쿼리 1개 이미지 경로가 들어있음 
+
+        # up_result=[]
+        # down_result=[]
+        # final_result=[]
+
+        # filter_list=[]
+
+        # for i in list_gt:
+        #     up_att=[]
+        #     down_att=[]
+        #     count3=0
+        #     for j in i[::-1]:
+        #         for x in up_color_dict:
+        #             if(int(j)==x):
+        #                 up_att.append(up_color_dict[x])
+        #                 count3+=1
+        #         if(count3==2):
+        #             break
+        #     if("blue" in up_att):
+        #         up_result.append(1)
+        #     else:
+        #         up_result.append(0)
+        #     count3=0
+        #     for j in i[::-1]:
+        #         for x in down_color_dict:
+        #             if(int(j)==x):
+        #                 down_att.append(down_color_dict[x])
+        #                 count3+=1
+        #         if(count3==2):
+        #             break
+        #     if("black" in down_att):
+        #         down_result.append(1)
+        #     else:
+        #         down_result.append(0)
+            
+        #     wr.writerow([self.imgs_path[countx].split('/')[-1],''])
+        #     wr.writerow(up_att)
+        #     wr.writerow(down_att)
+        #     wr.writerow("")
+        #     countx+=1
+
+        # #answer=input("Do Filtering?: Yes(1) No(0)")
+        # answer="1"
+        # if (answer=="1"):
+        #     #상의 및 하의 top3안에 정답이 있는지 비교하여 필터링 
+        #     for i in range(len(up_result)):
+        #         if(up_result[i] and down_result[i]):
+        #             final_result.append(1)
+        #         else:
+        #             final_result.append(0)
+
+        #     #필터링 후 남은 파일 목록 추출 
+        #     for i in range(len(final_result)):
+        #         if(final_result[i]==1):
+        #             filter_list.append(self.imgs_path[i+1])
+        #     print(filter_list)
+
+        #     #필터링된 파일 별도로 분리 
+        #     for i in filter_list:
+        #         path=i
+        #         temp=i.split("/")
+        #         dest=f"datasets/Market1501/Filter/{temp[-1]}"
+        #         shutil.copyfile(path,dest)
+
+
+            
+        
+        # up_att=[]
+        # down_att=[]
+        # count3=0
+        # up_color_dict={19:"black",20:"blue",21:"gray",22:"green",23:"purple",24:"red",25:"white",26:"yellow"}
+        # down_color_dict={5:"black",6:"blue",7:"brown",8:"gray",9:"green",10:"pink",11:"purple",12:"white",13:"yellow"}
+
+        # #temp_a=list_same1[::-1]
+
+
+        # for i in list_same1[::-1]:
+        #     for j in up_color_dict:
+        #         if(int(i)==j):
+        #             up_att.append(up_color_dict[j])
+        #             count3+=1
+        #     if(count3==3):
+        #         break
+        # count3=0
+
+        # for i in list_same1[::-1]:
+        #     for j in down_color_dict:
+        #         if(int(i)==j):
+        #             down_att.append(down_color_dict[j])
+        #             count3+=1
+        #     if(count3==3):
+        #         break
+
+        # list_other9.insert(0,"other-9:")
+        # list_same1.insert(0,"same-1:")
+        # # wr.writerow(list_other9)
+        # # wr.writerow(list_same1)
+        # # wr.writerow("")
+        # for i in self.imgs_path:
+        #     if(i.split('/')[2]=='query'):
+        #         wr.writerow(i.split('/')[-1])
+
+        # wr.writerow(up_att)
+        # wr.writerow(down_att)
+        # # wr.writerow(f["UP COLOR:","Top1: {up_att[0]}","Top-2: {up_att[1]}","Top-3: {up_att[2]}"])
+        # # wr.writerow(f["DOWN COLOR","Top1: {down_att[0]}","Top-2: {down_att[1]}","Top-3: {down_att[2]}"])
+        # wr.writerow("")
+        # ### 임시 출력
+        # print(dist_fake_att)
+
+
         Precsion_same_allatt = (dist_fake_att * dist_real_stack_01_reverse).sum(0).sum(0)/dist_real_stack_01_reverse.sum(0).sum(0)
-        logger.info(f"log jy: 1")
         self._results["same_0"] = float(0.0)
-        logger.info("log jy: 2")
         for i in range(Precsion_different_allatt.size(0)):
-            logger.info(f"log jy: {i+3}")
             self._results["same_"+str(i+1)+"_"+self.key_attribute[i]] = float(Precsion_same_allatt[i])
-        logger.info("log jy: end calcuate Precsion of same all attribute")
 
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
-        logger.info("log jy: start calcuate last Precsion of same")
         Precsion_same = (dist_fake_att * dist_real_stack_01_reverse).sum(-1) / dist_num_same.clamp(min=1.0)
         Precsion_same = Precsion_same.sum() / (n * m - (dist_num_same == 0).float().sum()).clamp(min=1.0)
         self._results["Ex_Precsion_s"] = float(Precsion_same)
-        logger.info("log jy: end calcuate last Precsion of same")
 
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
-        logger.info("log jy: start calcuate raw_cmc")
         # print(dist_fake_att_different[0,0])
         raw_cmc = dist_real_stack_01[torch.tensor(range(n)).reshape(-1, 1, 1), torch.tensor(range(m)).reshape(1, -1,
                                                                                                               1), dist_fake_att_different.reshape(
@@ -220,8 +335,6 @@ class ReidEvaluator(DatasetEvaluator):
         dist_same_equal_numatt = -2 * (dist_same_equal_numatt - 0.5)  # -1 means same attribute == num_att
         dist_fake_att_same = (dist_fake_stack * dist_same_equal_numatt).argsort(dim=-1, descending=False)
 
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
-        logger.info("log jy: start calcuate raw_cmc 2")
         raw_cmc = (dist_real_stack_01_reverse - dist_overflow)[
             torch.tensor(range(n)).reshape(-1, 1, 1), torch.tensor(range(m)).reshape(1, -1,
                                                                                      1), dist_fake_att_same.reshape(n,
@@ -233,8 +346,6 @@ class ReidEvaluator(DatasetEvaluator):
         tmp_cmc = tmp_cmc / div_cmc * raw_cmc
         AP_s = tmp_cmc.sum(dim=-1) / dist_num_same.clamp(min=1)
 
-        logger.info(f"log jy: memory summary: {torch.cuda.memory_summary()}")
-        logger.info("log jy: start calculate result")
         self._results["Ex_mAP_d"] = AP_d.sum() / (n * m - (dist_num_different == 0).float().sum()).clamp(min=1.0)
         self._results["Ex_mAP_s"] = AP_s.sum() / (n * m - (dist_num_same == 0).float().sum()).clamp(min=1.0)
 
@@ -336,7 +447,17 @@ class ReidEvaluator(DatasetEvaluator):
         #calculate
         dist_list_stack = torch.stack(dist_list,dim=-1) # n x m x NUM_ATT
 
-
+        # 20240509
+        query_count=0
+        for i in self.imgs_path: #self.imgs_path는 쿼리와 갤러리 이미지의 파일명이 모두 포함된 이미지 리스트임
+            if "query" in i:
+                result_dist_mat={}
+                query_filename=i.split('/')[-1]
+                query_filename=query_filename.split(".")[0]
+                result_dist_mat['dist_total']=dist[query_count].numpy()
+                result_dist_mat['dist_att']=(dist_list_stack / dist_list_stack.sum(-1).unsqueeze(-1))[query_count].numpy()
+                scipy.io.savemat(f'{query_filename}.mat',result_dist_mat)
+                query_count+=1
 
 
         #TODO CXD EXP
@@ -349,6 +470,17 @@ class ReidEvaluator(DatasetEvaluator):
         self.logger.info("dist:\n {}".format(dist))
         self.logger.info("fake_gap \n {}".format(fake_gap))
         self.logger.info("dist_list_stack \n {}".format(dist_list_stack))
+        ###자동화 
+        list_temp1=dist_list_stack.tolist()[0][0]
+        list_temp1.insert(0,"other-9:")
+        list_temp2=dist_list_stack.tolist()[0][-1]
+        list_temp2.insert(0,"same-1:")
+
+        f=open('/home/workspace/AMD/output/output.csv','a',encoding='utf-8',newline='')
+        wr=csv.writer(f)
+        # wr.writerow(list_temp1)
+        # wr.writerow(list_temp2)
+        # wr.writerow("")
 
 
         self.logger.info("gap between real and fake y is {} %".format(gap_real_fake))
@@ -363,9 +495,6 @@ class ReidEvaluator(DatasetEvaluator):
 
                 self.mkdir_id = str(time.time()).replace(".","_")
                 os.mkdir(os.path.join(self.cfg.OUTPUT_DIR, "output_imgs_"+self.mkdir_id))
-
-
-
 
                 for id_query in range(n):
                     if id_query % self.cfg.VISUAL.GAP_QUERY != 0:
@@ -383,7 +512,6 @@ class ReidEvaluator(DatasetEvaluator):
 
                     # type 3
                     list_choosen = [id_gallery_choose, indices_m[0], indices_m[1], indices_m[2]]
-
 
                     #path_names:[str,...,str]
                     choose_path_names = [query_imgs_path[id_query].split("/")[-1]]
@@ -673,7 +801,7 @@ def visiual_average_att(att_name, feature_mask, real_attributes,img_size=(384, 1
             if i // 2 * num_col + j >= len_att:
                 break
             plt.subplot(num_raw, num_col, i * num_col + j + 1)
-            plt.axis('off')  # 去掉坐标轴
+            plt.axis('off') 
             plt.text(0.5, 0.5, att_name[i // 2 * num_col + j], fontsize=8, ha='center', va="center")
 
     for i in range(1, num_raw, 2):
@@ -681,7 +809,7 @@ def visiual_average_att(att_name, feature_mask, real_attributes,img_size=(384, 1
             if i // 2 * num_col + j >= len_att:
                 break
             plt.subplot(num_raw, num_col, i * num_col + j + 1)
-            plt.axis('off')  # 去掉坐标轴
+            plt.axis('off')  
 
             plt.imshow(feature_mask[i // 2 * num_col + j], cmap='nipy_spectral')
             #plt.imshow(cv2.applyColorMap(np.uint8(255 * feature_mask[i // 2 * num_col + j]), cv2.COLORMAP_JET))
@@ -733,19 +861,19 @@ def visualization_savefig(path_names, att_names, imgs, att_mask, feature_distanc
     # name of pic
     for i, j in zip([0] * (num_col // 2), list(range(0, num_col, 2))):
         plt.subplot(num_low, num_col, i * num_col + j + 2)
-        plt.axis('off')  # 去掉坐标轴
+        plt.axis('off')  # 축제거
         plt.text(0.5, 0.5, path_names[j // 2], fontsize=6, ha='center', va="center")
 
     # name of title
     plt.subplot(num_low, num_col, num_col + 1)
-    plt.axis('off')  # 去掉坐标轴
+    plt.axis('off')  # 축제거
     str_show = "orginal"
     plt.text(0.5, 0.5, str_show, fontsize=14, ha='center', va="center")
 
     # name of att
     for i, j in zip(list(range(2, num_low, 1)), [0] * (num_low - 2)):
         plt.subplot(num_low, num_col, i * num_col + j + 1)
-        plt.axis('off')  # 去掉坐标轴
+        plt.axis('off')  # 축제거
         str_show = att_names[i - 2]
         str_show += "\n real_att: " + str(int(real_attribute[i - 2, 0]))
         str_show += "\n fake_att: " + str(float(fake_attribute[i - 2, 0]))[:6]
@@ -755,7 +883,7 @@ def visualization_savefig(path_names, att_names, imgs, att_mask, feature_distanc
     for i in list(range(1, num_low, 1)):
         for j in list(range(0, num_col, 2)):
             plt.subplot(num_low, num_col, i * num_col + j + 2)
-            plt.axis('off')  # 去掉坐标轴
+            plt.axis('off')  # 축제거
             if i == 1:
                 plt.imshow(imgs[j // 2].permute(1, 2, 0))
             else:
@@ -781,7 +909,7 @@ def visualization_savefig(path_names, att_names, imgs, att_mask, feature_distanc
         for i in list(range(1, num_low, 1)):
 
             plt.subplot(num_low, num_col, i * num_col + j + 1)
-            plt.axis('off')  # 去掉坐标轴
+            plt.axis('off')  # 축제거
             # print(i-1,j//2-1)
             if i == 1:
                 #TODO CXD ABS .abs()

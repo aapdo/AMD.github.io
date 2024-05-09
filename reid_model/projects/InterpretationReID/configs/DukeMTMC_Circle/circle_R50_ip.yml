@@ -15,7 +15,7 @@ MODEL:
     NAME: "build_resnet_backbone"
     WITH_NL: False
     DEPTH: "50x"
-    PRETRAIN_PATH: "/export/home/pretrain_models/resnet50-19c8e357.pth"
+    PRETRAIN_PATH: "home/workspace/export/home/pretrain_models/resnet50-19c8e357.pth"
 
 DATALOADER:
   ATT_RESAMPLE: False
@@ -56,7 +56,7 @@ INTERPRETATION:
       # If use ImageNet pretrain model
       PRETRAIN: True
       # Pretrain model path
-      PRETRAIN_PATH: '/export/home/pretrain_models/resnet50-19c8e357.pth'
+      PRETRAIN_PATH: 'home/workspace/export/home/pretrain_models/resnet50-19c8e357.pth'
     
     HEADS:
 #      # Number of identity

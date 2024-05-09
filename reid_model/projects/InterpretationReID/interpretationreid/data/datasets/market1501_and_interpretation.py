@@ -53,7 +53,7 @@ class Market1501_And_Interpretation(ImageDataset):
     _junk_pids = [0, -1]
     dataset_dir = ''
     dataset_url = 'http://188.138.127.15:81/Datasets/Market-1501-v15.09.15.zip'
-    dataset_name = "market1501"
+    dataset_name = "Market1501"
 
     def __init__(self, root='datasets', market1501_500k=False, **kwargs):
         self.logger = logging.getLogger('fastreid.' + __name__)
@@ -63,7 +63,7 @@ class Market1501_And_Interpretation(ImageDataset):
 
         # allow alternative directory structure
         self.data_dir = self.dataset_dir
-        data_dir = osp.join(self.data_dir, 'Market1501-1501-v15.09.15')
+        data_dir = osp.join(self.data_dir, 'Market1501')
         if osp.isdir(data_dir):
             self.data_dir = data_dir
         else:

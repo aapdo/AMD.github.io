@@ -7,7 +7,8 @@ from contextlib import contextmanager
 import torch
 import copy
 from fastreid.utils.logger import log_every_n_seconds
-from fastreid.evaluation.reid_evaluation import ReidEvaluator
+import csv
+
 
 class DatasetEvaluator:
     """
@@ -106,11 +107,6 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
 
             outputs_dict = model(inputs)
             outputs = outputs_dict["outputs"]
-            print("===== test_jy =====")
-            print("outputs_dict: ", outputs_dict)
-            print("output: ", outputs)
-            print("===== test_jy =====")
-            
 
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
@@ -149,16 +145,19 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
         )
     )
     results = evaluator.evaluate()
-    logger.info("===== test_jy =====")
-    logger.info("isinstance(evaluators, DatasetEvaluator)", isinstance(evaluator, DatasetEvaluator))
-    logger.info("isinstance(evaluators, ReidEvaluator)", isinstance(evaluator, ReidEvaluator))
-    logger.info("evaluator.evalute results: ", results)
-    logger.info("===== test_jy =====")
+
+    ### 자동화
+    '''
+    f=open('/home/workspace/AMD/output/output.csv','a',encoding='utf-8',newline='')
+    wr=csv.writer(f)
+    for i in evaluator.imgs_path:
+        print(i)
+    '''
+
+
     #TODO CXD Visualizer
-    
     dist_list_stack,query_real_attributes, gallery_real_attributes = evaluator.visualize() # n x m x NUM_ATT
     dict_q_att = {3:'Reweight with the most contributed attribute, unstable operation!', 4:"Reweight with the most contributed exclusive attribute, stable operation! "}
-    logger.info(f"log jy: start eval dist, {torch.cuda.memory_summary()}")
     for list_q_att in list([3,4]):
         logger.info("*" * 50)
         logger.info("Orginal Results: {}".format(results))
@@ -172,31 +171,25 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
             for q_att in list([list_q_att]):
                 New_results = evaluator.evaluate_dist(dist_list_stack,q_att,p_att,query_real_attributes)
                 logger.info(" mode={} , p_att={} ".format(q_att,p_att))
-                #logger.info("{}".format(New_results))
+                logger.info("{}".format(New_results))
                 if New_results_best is None or New_results['New_Rank-1']>=New_results_best['New_Rank-1']:
                     New_results_best = copy.deepcopy(New_results)
             #logger.info("*" * 50)
         logger.info("*" * 50)
         logger.info("mode = {}, New Reweight Results = {}".format(dict_q_att[q_att],New_results_best))
         logger.info("*" * 50)
-    logger.info(f"log jy: end eval dist, {torch.cuda.memory_summary()}")
 
 
 
-
-
-    # jy
-    #logger.info("*" * 50)
-    #New_results = evaluator.evaluate_dist(dist_list_stack, q_att=None, p_att=None)
-    #logger.info("{}".format(New_results))
-    #logger.info("*" * 50)
+    # logger.info("*" * 50)
+    # New_results = evaluator.evaluate_dist(dist_list_stack, q_att=None, p_att=None)
+    # logger.info("{}".format(New_results))
+    # logger.info("*" * 50)
 
 
     # An evaluator may return None when not in main process.
     # Replace it by an empty dict instead to make it easier for downstream code to handle
-    logger.info(f"log jy: start explain eval, {torch.cuda.memory_summary()}")
     explain_result = evaluator.explain_eval(dist_list_stack, query_real_attributes, gallery_real_attributes, lamda=2.0)
-    logger.info(f"log jy: end explain eval, {torch.cuda.memory_summary()}")
 
 
     if results is None:
