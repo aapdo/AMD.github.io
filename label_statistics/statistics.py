@@ -55,7 +55,6 @@ def get_correct_origin_diff(correct_label_df, mat_attribute_df):
     '''
     기존 라벨링 데이터와 수정한 라벨링 데이터 사이에서 얼마나 수정되었는지 계산하는 함수
     '''
-    #pattern = r'\d{4}' 
     pattern = r'^.{4}'
     # 전체 라벨 수
     total_label_number = 0
@@ -127,9 +126,9 @@ def draw_pie_chart(labels, sizes, title, chart_name):
 
 def draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr):
     '''
-    2. 전체 라벨 중 수정한 비율이 얼마나 되는지
-    3. 수정 후 속성 분포가 어떻게 되는지
-    4. 각 속성별로 수정된 비율이 얼마나 되는지
+    1. 전체 라벨 중 수정한 비율이 얼마나 되는지
+    2. 수정 후 속성 분포가 어떻게 되는지
+    3. 각 속성별로 수정된 비율이 얼마나 되는지
     '''
 
     # 전체에서 수정된 비율
@@ -261,9 +260,9 @@ if __name__ == '__main__':
     columns_to_convert = correct_label_df.columns.drop('origin_img_name')  # origin_img_name 제외
     correct_label_df[columns_to_convert] = correct_label_df[columns_to_convert].apply(pd.to_numeric, downcast='integer', errors='coerce')
 
-    #nan_in_rows = correct_label_df.isna().any(axis=1)
-    #nan_rows = correct_label_df[nan_in_rows]
-    #print("NaN이 있는 행:\n", nan_rows)
+    nan_in_rows = correct_label_df.isna().any(axis=1)
+    nan_rows = correct_label_df[nan_in_rows]
+    print("NaN이 있는 행:\n", nan_rows)
 
     mat_attribute_train, mat_attribute_test, train_indexes, test_indexes = load_mat_attr(mat_file_path)
 
@@ -293,7 +292,7 @@ if __name__ == '__main__':
 
     total_label_number, correct_img_number, cnt_correct_attr = get_correct_origin_diff(correct_label_df, mat_attribute)
 
-    # draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr)
+    draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr)
 
     print("전체 검토한 사진: ", total_label_number)
     print("수정한 사진의 수: ", correct_img_number)
