@@ -8,3 +8,4 @@ label_statistics/**/*.jpg
 label_statistics/**/*.png
 reid_model/pretrain_models/*
 *.pyc
+/**/__pycache/*
