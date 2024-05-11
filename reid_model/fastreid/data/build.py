@@ -68,7 +68,9 @@ def build_reid_test_loader(cfg, dataset_name):
     cfg = cfg.clone()
     cfg.defrost()
 
+    print(dataset_name)
     dataset = DATASET_REGISTRY.get(dataset_name)(root=_root)
+
     if comm.is_main_process():
         dataset.show_test()
 

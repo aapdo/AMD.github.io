@@ -11,7 +11,7 @@ import sys
 
 
 sys.path.append('.')
-os.chdir("/home/workspace/AMD") #/home/workspace/로 이동하는것 방지 
+os.chdir("/root/amd/reid_model") #/home/workspace/로 이동하는것 방지 
 
 from fastreid.config import get_cfg
 from projects.InterpretationReID.interpretationreid.engine import DefaultTrainer, default_argument_parser, default_setup, launch
@@ -87,6 +87,7 @@ def main(args):
 
     if cfg.INTERPRETATION.PRETRAIN_MODEL:
         #print("trainer.load_n_or_not()")
+        print("run load_n_or_not in main")
         trainer.load_n_or_not()
         #print("load success")
     #print(trainer.model)

@@ -5,4 +5,5 @@ from .markettoduke_interpretation import MarketToDuke_Interpretation
 
 # AND
 from .market1501_and_interpretation import Market1501_And_Interpretation
+from .market1501_interpretation import Market1501_Interpretation
 from .dukemtmcreid_and_interpretation import DukeMTMC_And_Interpretation

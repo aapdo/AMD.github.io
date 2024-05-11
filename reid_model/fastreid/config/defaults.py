@@ -20,7 +20,7 @@ _C = CN()
 # MODEL
 # -----------------------------------------------------------------------------
 _C.MODEL = CN()
-_C.MODEL.DEVICE = "cuda"
+_C.MODEL.DEVICE = "cuda:0"
 _C.MODEL.META_ARCHITECTURE = 'Baseline'
 _C.MODEL.FREEZE_LAYERS = ['']
 
@@ -109,7 +109,7 @@ _C.MODEL.LOSSES.FL.GAMMA = 2
 _C.MODEL.LOSSES.FL.SCALE = 1.0
 
 # Path to a checkpoint file to be loaded to the model. You can find available models in the model zoo.
-_C.MODEL.WEIGHTS = ""
+_C.MODEL.WEIGHTS = "/home/workspace/export/home/cxd/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth"
 
 # Values to be used for image normalization
 _C.MODEL.PIXEL_MEAN = [0.485*255, 0.456*255, 0.406*255]

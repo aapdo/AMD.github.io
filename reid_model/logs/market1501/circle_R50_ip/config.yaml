@@ -43,7 +43,7 @@ INPUT:
   - 384
   - 128
 INTERPRETATION:
-  ATT_PRETRAIN_DICT: /root/amd/reid_model/pretrain_models/market_circle_r50_ip.pth
+  ATT_PRETRAIN_DICT: ''
   FREEZE_LAYERS:
   - heads
   - backbone_2
@@ -82,7 +82,7 @@ INTERPRETATION:
     threshold: 0.3
   MODEL:
     SHARE_LAYER: 3
-  PRETRAIN_MODEL: /root/amd/reid_model/pretrain_models/bagtricks_circle_R50/model_final.pth
+  PRETRAIN_MODEL: /root/amd/reid_model/pretrain_models/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth
 MODEL:
   BACKBONE:
     DEPTH: 50x
@@ -141,7 +141,7 @@ MODEL:
   - 58.395
   - 57.120000000000005
   - 57.375
-  WEIGHTS: ''
+  WEIGHTS: /root/amd/reid_model/pretrain_models/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth
 OUTPUT_DIR: logs/market1501/circle_R50_ip
 SOLVER:
   AMP_ENABLED: false
@@ -180,7 +180,7 @@ TEST:
     QE_K: 5
     QE_TIME: 1
   EVAL_PERIOD: 30
-  IMS_PER_BATCH: 12
+  IMS_PER_BATCH: 48
   METRIC: euclidean
   PRECISE_BN:
     DATASET: Market1501

@@ -9,6 +9,7 @@ MODEL:
     CE:
       EPSILON: 0.
       SCALE: 1.
+  WEIGHTS: '/root/amd/reid_model/pretrain_models/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth'
 
   FREEZE_LAYERS: ["heads","backbone_2","backbone_1"]
 
@@ -16,7 +17,7 @@ MODEL:
     NAME: "build_resnet_backbone"
     WITH_NL: False
     DEPTH: "50x"
-    PRETRAIN_PATH: '/home/workspace/export/home/pretrain_models/resnet50-19c8e357.pth'
+    PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/resnet50-19c8e357.pth'
 
 DATALOADER:
   ATT_RESAMPLE: False
@@ -27,8 +28,8 @@ DATASETS:
 
 INTERPRETATION:
   FREEZE_LAYERS: ["heads","backbone_2","backbone_1"]
-  PRETRAIN_MODEL: '/home/workspace/export/home/cxd/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth'
-  ATT_PRETRAIN_DICT: '/export/home/cxd/fast-reid-interpretation-1008/pretrain_models/market_dict_all.pth'
+  PRETRAIN_MODEL: '/root/amd/reid_model/pretrain_models/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth'
+  # ATT_PRETRAIN_DICT: '/export/home/cxd/fast-reid-interpretation-1008/pretrain_models/market_dict_all.pth'
 
   MODEL:
     SHARE_LAYER: 3
@@ -57,7 +58,7 @@ INTERPRETATION:
       # If use ImageNet pretrain model
       PRETRAIN: True
       # Pretrain model path
-      PRETRAIN_PATH: '/home/workspace/export/home/pretrain_models/resnet50-19c8e357.pth'
+      PRETRAIN_PATH: '/root/amd/reid_model/pretrain_models/resnet50-19c8e357.pth'
 
     HEADS:
       # Number of identity

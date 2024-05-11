@@ -57,6 +57,8 @@ class ReidEvaluator(DatasetEvaluator):
         return dist.cpu().numpy()
 
     def evaluate(self):
+        logger.info("evaluate")
+        
         if comm.get_world_size() > 1:
             comm.synchronize()
             features = comm.gather(self.features)
@@ -87,7 +89,7 @@ class ReidEvaluator(DatasetEvaluator):
         gallery_camids = np.asarray(camids[self._num_query:])
 
         self._results = OrderedDict()
-
+        print(features[0].shape)
         if self.cfg.TEST.AQE.ENABLED:
             logger.info("Test with AQE setting")
             qe_time = self.cfg.TEST.AQE.QE_TIME

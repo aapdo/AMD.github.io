@@ -3,7 +3,9 @@ import logging
 import pprint
 import sys, os
 import csv
-from collections import Mapping, OrderedDict
+# from collections import Mapping, OrderedDict
+from collections.abc import Mapping
+from collections import OrderedDict
 
 import numpy as np
 from tabulate import tabulate
@@ -21,6 +23,7 @@ def print_csv_format(results):
     Args:
         results (OrderedDict[dict]): task_name -> {metric -> score}
     """
+    logger.info("interpretationreid/evaluation/testing.py, print_csv_format")
     assert isinstance(results, OrderedDict), results  # unordered results cannot be properly printed
     task = list(results.keys())[0]
     metrics = ["Datasets"] + [k for k in results[task]]
@@ -42,7 +45,7 @@ def print_csv_format(results):
     for i in csv_results[0]:
         a_list.append(i)
     logger.info("Evaluation results in csv format: \n" + colored(table, "cyan"))
-    f=open('/home/workspace/AMD/output/output.csv','a',encoding='utf-8',newline='')
+    f=open('/root/amd/reid_model/output/output.csv','a',encoding='utf-8',newline='')
     wr=csv.writer(f)
     wr.writerow(metrics)
     wr.writerow(a_list)

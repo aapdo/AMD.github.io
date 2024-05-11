@@ -353,6 +353,7 @@ class ReidEvaluator(DatasetEvaluator):
 
 
     def visualize(self):
+        logger.info("interpretationreid/evaluation/reid_evaluation.py, visualize")
         if comm.get_world_size() > 1:
             assert False
             #TODO CXD
@@ -452,7 +453,7 @@ class ReidEvaluator(DatasetEvaluator):
         for i in self.imgs_path: #self.imgs_path는 쿼리와 갤러리 이미지의 파일명이 모두 포함된 이미지 리스트임
             if "query" in i:
                 result_dist_mat={}
-                query_filename=i.split('/')[-1]
+                query_filename= "/root/amd/reid_model/output/"+ i.split('/')[-1]
                 query_filename=query_filename.split(".")[0]
                 result_dist_mat['dist_total']=dist[query_count].numpy()
                 result_dist_mat['dist_att']=(dist_list_stack / dist_list_stack.sum(-1).unsqueeze(-1))[query_count].numpy()
@@ -476,7 +477,7 @@ class ReidEvaluator(DatasetEvaluator):
         list_temp2=dist_list_stack.tolist()[0][-1]
         list_temp2.insert(0,"same-1:")
 
-        f=open('/home/workspace/AMD/output/output.csv','a',encoding='utf-8',newline='')
+        f=open('/root/amd/reid_model/output/output.csv','a',encoding='utf-8',newline='')
         wr=csv.writer(f)
         # wr.writerow(list_temp1)
         # wr.writerow(list_temp2)
