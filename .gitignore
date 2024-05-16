@@ -14,3 +14,4 @@ reid_model/pretrain_models/*
 /.github/*
 /.idea/*
 /**/*.csv
+/label_statistics/dataset/**/*.mat
