@@ -4,8 +4,6 @@ reid_model/**/*.jpg
 reid_model/**/*.pth
 reid_model/**/*.mat
 reid_model/**/*.txt
-label_statistics/**/*.jpg
-label_statistics/**/*.png
 reid_model/pretrain_models/*
 *.pyc
 /**/__pycache/*
@@ -14,4 +12,9 @@ reid_model/pretrain_models/*
 /.github/*
 /.idea/*
 /**/*.csv
+/label_statistics/**/*.jpg
+/label_statistics/**/*.png
 /label_statistics/dataset/**/*.mat
+/label_manager/**/*.jpg
+/label_manager/**/*.png
+/label_manager/dataset/**/*.mat
