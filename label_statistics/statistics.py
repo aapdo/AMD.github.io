@@ -8,8 +8,14 @@ import csv
 # import matplot as plt
 import matplotlib.pyplot as plt
 
-cur_path = "./label_statistics"
-
+root_path = "/Users/imjun-yeong/googleDrive_/dgu/3_1/개별연구/csid_git/label_statistics"
+dataset_path = root_path + "/dataset/Market-1501-v15.09.15"
+train_data_path = dataset_path + "/bounding_box_train"
+test_data_path = dataset_path + "/bounding_box_test"
+query_data_path = dataset_path + "/query"
+mat_file_path = root_path + "/market_attribute.mat"
+correct_label_file_path = root_path + "/for_statistics.xlsx"
+img_file_path = root_path + "/labelTarget"
 
 def get_all_files_in_folder(folder_path):
     """
@@ -121,7 +127,7 @@ def draw_pie_chart(labels, sizes, title, chart_name):
     ax.axis('equal')  # 원형을 유지하기 위해 설정
     plt.title(title)
 
-    plt.savefig(cur_path + "/" + chart_name + ".png")
+    plt.savefig(root_path + "/statistics/" + chart_name + ".png")
     plt.close(fig)
 
 def draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr):
@@ -233,13 +239,11 @@ def draw_bar_chat_attribute_distribution(total_label_number, correct_label_df):
     plt.xlim(0, 1)
 
     # 그래프 표시
-    plt.savefig(cur_path + "/" + "all_attr_ratio_bar" + ".png")
+    plt.savefig(root_path + "/statistics/all_attr_ratio_bar.png")
     plt.close(fig)
 
 if __name__ == '__main__':
-    mat_file_path = cur_path + "/market_attribute.mat"
-    correct_label_file_path = cur_path + "/correct_label.xlsx"
-    img_file_path = cur_path + "/labelTarget"
+
 
     # 정규 표현식
     
@@ -271,6 +275,26 @@ if __name__ == '__main__':
     mat_attribute = mat_attribute.drop(columns=['image_index'])
 
     mat_attribute.rename(columns={
+        'downblack': 'down-black', 
+        'downblue': 'down-blue',
+        'downbrown': 'down-brown', 
+        'downgray': 'down-gray', 
+        'downgreen': 'down-green', 
+        'downpink': 'down-pink', 
+        'downpurple': 'down-purple',
+        'downwhite': 'down-white', 
+        'downyellow': 'down-yellow', 
+        'upblack': 'up-black', 
+        'upblue': 'up-blue', 
+        'upgreen': 'up-green', 
+        'upgray': 'up-gray',
+        'uppurple': 'up-purple', 
+        'upred': 'up-red', 
+        'upwhite': 'up-white', 
+        'upyellow': 'up-yellow',
+    }, inplace=True)
+
+    correct_label_df.rename(columns={
         'downblack': 'down-black', 
         'downblue': 'down-blue',
         'downbrown': 'down-brown', 
