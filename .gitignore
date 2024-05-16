@@ -10,6 +10,7 @@ reid_model/pretrain_models/*
 *.pyc
 /**/__pycache/*
 /**/*.so
+/**/*.o
 /.github/*
 /.idea/*
 /**/*.csv
