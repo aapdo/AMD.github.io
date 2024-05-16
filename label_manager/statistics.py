@@ -8,7 +8,7 @@ import csv
 # import matplot as plt
 import matplotlib.pyplot as plt
 
-root_path = "/Users/imjun-yeong/googleDrive_/dgu/3_1/개별연구/csid_git/label_statistics"
+root_path = "/Users/imjun-yeong/googleDrive_/dgu/3_1/개별연구/csid_git/label_manager"
 dataset_path = root_path + "/dataset/Market-1501-v15.09.15"
 train_data_path = dataset_path + "/bounding_box_train"
 test_data_path = dataset_path + "/bounding_box_test"
