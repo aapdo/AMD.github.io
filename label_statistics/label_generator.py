@@ -4,7 +4,8 @@ import shutil
 
 # Load the correctly uploaded Excel file
 root_path = os.getcwd()
-label_manager_path = os.path.join(root_path, "label_statistics")
+# label_manager_path = os.path.join(root_path, "label_statistics")
+label_manager_path = root_path
 dataset_dir_path = os.path.join(label_manager_path, "dataset")
 dataset_path = os.path.join(dataset_dir_path, "Market-1501-v15.09.15")
 train_data_path = os.path.join(dataset_path, "bounding_box_train")
