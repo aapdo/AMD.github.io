@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     # Save the updated DataFrames to CSV
     save_to_csv(df_train, csv_result_dir_path + "/train_attribute.csv")
-    save_to_csv(df_test, csv_result_dir_path + "/test_atrribute.csv")
+    save_to_csv(df_test, csv_result_dir_path + "/test_attribute.csv")
     save_to_csv(df_query, csv_result_dir_path + "/query_attribute.csv")
 
 

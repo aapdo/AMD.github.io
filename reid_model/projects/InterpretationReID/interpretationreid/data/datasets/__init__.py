@@ -1,11 +1,11 @@
 from .dukemtmcreid_interpretation import  DukeMTMC_Interpretation
-from .market1501_interpretation import Market1501_Interpretation
+# from .market1501_interpretation import Market1501_Interpretation
 from .duketomarket_interpretation import DukeToMarket_Interpretation
 from .markettoduke_interpretation import MarketToDuke_Interpretation
-from .market1501_interpretation_correct_label import Market1501_Interpretation_correct_label
+from .market1501_interpretation_correct_label import Market1501_Interpretation
 
 # AND
 from .market1501_and_interpretation import Market1501_And_Interpretation
-from .market1501_interpretation import Market1501_Interpretation
-from .market1501_interpretation_correct_label import Market1501_Interpretation_correct_label
+# from .market1501_interpretation import Market1501_Interpretation
+from .market1501_interpretation_correct_label import Market1501_Interpretation
 from .dukemtmcreid_and_interpretation import DukeMTMC_And_Interpretation
