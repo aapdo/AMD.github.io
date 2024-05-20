@@ -12,7 +12,7 @@ train_data_path = os.path.join(dataset_path, "bounding_box_train")
 test_data_path = os.path.join(dataset_path, "bounding_box_test")
 query_data_path = os.path.join(dataset_path, "query")
 correct_label_path = os.path.join(label_manager_path, "correct_label.xlsx")
-new_dataset_path = os.path.join(dataset_dir_path, "Market-1586-v24.05.12")
+new_dataset_path = os.path.join(dataset_dir_path, "Market-1501-v24.05.20")
 new_train_data_path = os.path.join(new_dataset_path, "bounding_box_train")
 new_test_data_path = os.path.join(new_dataset_path, "bounding_box_test")
 new_query_data_path = os.path.join(new_dataset_path, "query")
@@ -46,22 +46,46 @@ def get_filtered_file_list(**directory_paths):
     return file_lists
 
 
-def update_new_img_name(df, pid_range = 1587):
+def update_new_img_name(df, pid_range = 1587, junk_option = False):
+    origin_pid_set = set(range(1, pid_range+1))
     def transform_name(row):
         origin_img_name = row['origin_img_name']
         new_img_name = row['new_img_name']
         origin_id, rest = origin_img_name.split('_', 1)
+        if int(origin_id) in origin_pid_set:
+            origin_pid_set.discard(int(origin_id))
         
         if new_img_name == 0:
             return origin_img_name
-        elif new_img_name == -1:
+        elif new_img_name == -1 or junk_option:
             return f"-1_{rest}"
-        else:
+        # junk option == true 라면 데이터셋 자체가 변화하지 않는다.
+        else:        
             return f"{new_img_name:04d}_{rest}"
+        
+    def transform_junk(row):
+        origin_img_name = row['origin_img_name']
+        new_img_name = row['new_img_name']
+        origin_id, rest = origin_img_name.split('_', 1)
+        if int(origin_id) in origin_pid_set:
+            origin_pid_set.discard(int(origin_id))
+        
+        # 0인 경우에는 무조건 그대로
+        if new_img_name == 0:
+            return origin_img_name
+        # junk_option == True거나 번호가 -1인 경우는 무조건 -1로
+        elif junk_option or new_img_name == -1:
+            return f"-1_{rest}"
+        # junk_option == False 이고 0도, -1도 아니고 1585 같은 숫자가 써있다면 무시하고 그냥 원래 이름으로.
+        else:
+            return origin_img_name    
+        
     if pid_range == 1587:
         df['new_img_name'] = df.apply(transform_name, axis=1)
-    else:
-        df['new_img_name'] = df['origin_img_name']
+        print("not find: ", origin_pid_set)
+    elif pid_range == 1501:
+        df['new_img_name'] = df.apply(transform_junk, axis=1)
+        print("not find: ", origin_pid_set)
     return df
 
 def load_xlsx_and_init(file_path):
@@ -175,7 +199,9 @@ if __name__ == '__main__':
     if len(missing_in_img_name_list) > 0:
         print(missing_in_img_name_list)
         exit()
-    df = update_new_img_name(df, 1501)
+    # 1501 옵션을 넣으면 데이터셋 자체는 변화시키지 않고, 1501명으로 유지하지만 라벨만 바꿈
+    # junk 옵션을 넣으면 pid가 변해야 하는 사진을 모두 junk로 처리함.
+    df = update_new_img_name(df, pid_range=1501, junk_option=False)
     
     train_data_set = set(file_lists['train'])
     test_data_set = set(file_lists['test'])
@@ -191,6 +217,18 @@ if __name__ == '__main__':
     df = df.drop(columns=['origin_img_name'])
     df = df.rename(columns={'new_img_name': 'img_name'})
 
+    # 'img_name' 열의 값을 '_' 기준으로 분할하고 첫 번째 값을 추출
+    df['pid'] = df['img_name'].str.split('_').str[0]
+
+    # 첫 번째 값이 '-1'인 행을 필터링하여 제거
+    df = df[df['pid'] != '-1']
+
+    # 'first_part' 열을 삭제 (필요 시)
+    df.drop(columns=['pid'], inplace=True)
+
+    # 기존 연구와 동일한 순서로 속성 이름을 변경
+    columns = [ 'img_name', 'age', 'backpack', 'bag', 'clothes', 'down', 'downblack', 'downblue', 'downbrown', 'downgray', 'downgreen', 'downpink', 'downpurple', 'downwhite', 'downyellow', 'gender', 'hair', 'handbag', 'hat', 'up', 'upblack', 'upblue', 'upgray', 'upgreen', 'uppurple', 'upred', 'upwhite', 'upyellow', 'dataset_category']
+    df = df[columns]
 
     # Split the DataFrame into train, test, and query DataFrames
     df_train = df[df['dataset_category'] == 'train'].drop(columns='dataset_category')
