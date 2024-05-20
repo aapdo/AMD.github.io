@@ -9,6 +9,7 @@ import csv
 import matplotlib.pyplot as plt
 
 root_path = "/Users/imjun-yeong/googleDrive_/dgu/3_1/개별연구/csid_git/label_manager"
+root_path = '/root/amd/label_manager'
 dataset_path = root_path + "/dataset/Market-1501-v15.09.15"
 train_data_path = dataset_path + "/bounding_box_train"
 test_data_path = dataset_path + "/bounding_box_test"
@@ -16,6 +17,9 @@ query_data_path = dataset_path + "/query"
 mat_file_path = root_path + "/market_attribute.mat"
 correct_label_file_path = root_path + "/for_statistics.xlsx"
 img_file_path = root_path + "/labelTarget"
+
+down_attr_list = ['down-black', 'down-blue', 'down-brown', 'down-gray', 'down-green', 'down-pink', 'down-purple', 'down-white', 'down-yellow', 'down']
+upper_attr_list = ['up-black', 'up-blue', 'up-green', 'up-gray', 'up-purple', 'up-red', 'up-white', 'up-yellow', 'up']
 
 def get_all_files_in_folder(folder_path):
     """
@@ -65,37 +69,10 @@ def get_correct_origin_diff(correct_label_df, mat_attribute_df):
     # 전체 라벨 수
     total_label_number = 0
     # 하나라도 라벨이 수정된 사진의 수
-    correct_img_number = 0
+    cnt_all_attr_diff = 0
     # 각 속성별로 수정된 수
-    cnt_correct_attr = {
-        'age': 0,
-        'backpack': 0,
-        'bag': 0,
-        'handbag': 0,
-        'down-black': 0,
-        'down-blue': 0,
-        'down-brown': 0,
-        'down-gray': 0,
-        'down-green': 0,
-        'down-pink': 0,
-        'down-purple': 0,
-        'down-white': 0,
-        'down-yellow': 0,
-        'up-black': 0,
-        'up-blue': 0,
-        'up-green': 0,
-        'up-gray': 0,
-        'up-purple': 0,
-        'up-red': 0,
-        'up-white': 0,
-        'up-yellow': 0,
-        'clothes': 0,
-        'down': 0,
-        'up': 0,
-        'hair': 0,
-        'hat': 0,
-        'gender': 0,        
-    }
+    cnt_upper_diff = 0
+    cnt_lower_diff = 0
 
     for index, row in correct_label_df.iterrows():
         total_label_number += 1
@@ -106,16 +83,25 @@ def get_correct_origin_diff(correct_label_df, mat_attribute_df):
         # 기존 라벨 속성
         original_attr = mat_attribute.loc[pid]
         # 수정이 한번이라도 이루어졌는지 체크하는 변수
-        flag = False
-
-        for key, value in original_attr.items():
+        
+        total_flag = False
+        down_flag = False
+        up_flag = False
+         
+        for key, value in original_attr.items():    
             if value != row[key]:
-                cnt_correct_attr[key] += 1
-                flag = True
-        if flag:
-            correct_img_number += 1
-
-    return total_label_number, correct_img_number, cnt_correct_attr
+                if key in down_attr_list:
+                    down_flag = True
+                if key in upper_attr_list:
+                    up_flag = True
+                total_flag = True
+        if total_flag:
+            cnt_all_attr_diff += 1
+        if up_flag:
+            cnt_upper_diff += 1
+        if down_flag:
+            cnt_lower_diff += 1
+    return total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff
 
 def draw_pie_chart(labels, sizes, title, chart_name):
     fig, ax = plt.subplots()
@@ -130,7 +116,7 @@ def draw_pie_chart(labels, sizes, title, chart_name):
     plt.savefig(root_path + "/statistics/" + chart_name + ".png")
     plt.close(fig)
 
-def draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr):
+def draw_modified_ratio_pie_chart(total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff):
     '''
     1. 전체 라벨 중 수정한 비율이 얼마나 되는지
     2. 수정 후 속성 분포가 어떻게 되는지
@@ -142,23 +128,21 @@ def draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_co
 
     title = "Ratio of Attributes Modified by One or More"
     chart_name = "all_modification_ratio"
-    modified_ratio = correct_img_number / total_label_number * 100
+    modified_ratio = cnt_all_attr_diff / total_label_number * 100
     sizes = [100-modified_ratio, modified_ratio]
     draw_pie_chart(labels=labels, sizes=sizes, title=title, chart_name=chart_name)
 
     # 상의가 수정된 비율
     title = "Ratio of Modified Upper Attributes"
     chart_name = "upper_modification_ratio"
-    cnt_modified_upper = cnt_correct_attr['up-black'] + cnt_correct_attr['up-blue'] + cnt_correct_attr['up-green'] + cnt_correct_attr['up-gray'] + cnt_correct_attr['up-purple'] + cnt_correct_attr['up-red'] + cnt_correct_attr['up-white'] + cnt_correct_attr['up-yellow'] + cnt_correct_attr['up']
-    modified_ratio = cnt_modified_upper / total_label_number * 100
+    modified_ratio = cnt_upper_diff / total_label_number * 100
     sizes = [100-modified_ratio, modified_ratio]
     draw_pie_chart(labels=labels, sizes=sizes, title=title, chart_name=chart_name)
 
     # 하의가 수정된 비율
     title = "Ratio of Modified Lower Attributes"
     chart_name = "lower_modification_ratio"
-    cnt_modified_lower = cnt_correct_attr['down-black'] + cnt_correct_attr['down-blue'] + cnt_correct_attr['down-brown'] + cnt_correct_attr['down-gray'] + cnt_correct_attr['down-purple'] + cnt_correct_attr['down-green'] + cnt_correct_attr['down-white'] + cnt_correct_attr['down-yellow'] + cnt_correct_attr['down-pink'] + cnt_correct_attr['down']
-    modified_ratio = cnt_modified_lower / total_label_number * 100
+    modified_ratio = cnt_lower_diff / total_label_number * 100
     sizes = [100-modified_ratio, modified_ratio]
     draw_pie_chart(labels=labels, sizes=sizes, title=title, chart_name=chart_name)
 
@@ -314,11 +298,11 @@ if __name__ == '__main__':
         'upyellow': 'up-yellow',
     }, inplace=True)
 
-    total_label_number, correct_img_number, cnt_correct_attr = get_correct_origin_diff(correct_label_df, mat_attribute)
+    total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff = get_correct_origin_diff(correct_label_df, mat_attribute)
 
-    draw_modified_ratio_pie_chart(total_label_number, correct_img_number, cnt_correct_attr)
+    draw_modified_ratio_pie_chart(total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff)
 
     print("전체 검토한 사진: ", total_label_number)
-    print("수정한 사진의 수: ", correct_img_number)
+    print("수정한 사진의 수: ", cnt_all_attr_diff)
 
     draw_bar_chat_attribute_distribution(total_label_number, correct_label_df)

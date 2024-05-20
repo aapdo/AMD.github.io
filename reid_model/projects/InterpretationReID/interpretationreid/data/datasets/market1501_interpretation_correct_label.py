@@ -51,19 +51,21 @@ class Market1501_Interpretation(ImageDataset):
         - images: 12936 (train) + 3368 (query) + 15913 (gallery).
     """
     _junk_pids = [0, -1]
-    dataset_dir = 'Market-1587-v24.05.19'
+    # dataset_dir = 'Market-1587-v24.05.19'
+    dataset_dir = 'Market-1501-v24.05.19'
     dataset_url = 'http://188.138.127.15:81/Datasets/Market-1501-v15.09.15.zip'
     dataset_name = "market1501"
 
     def __init__(self, root='datasets', market1501_500k=False, **kwargs):
-        self.logger = logging.getLogger('fastreid.' + __name__)
+        self.logger = logging.getLogger('fastreid.' + __name__ + 'CORRECT_LABEL')
         # self.root = osp.abspath(osp.expanduser(root))
         self.root = '/root/amd/reid_model/datasets'
         self.dataset_dir = osp.join(self.root, self.dataset_dir)
 
         # allow alternative directory structure
         self.data_dir = self.dataset_dir
-        data_dir = osp.join(self.data_dir, 'Market-1587-v24.05.19')
+        # data_dir = osp.join(self.data_dir, 'Market-1587-v24.05.19')
+        data_dir = osp.join(self.data_dir, 'Market-1501-v24.05.19')
         if osp.isdir(data_dir):
             self.data_dir = data_dir
         else:

@@ -15,6 +15,6 @@ reid_model/pretrain_models/*
 /label_statistics/**/*.jpg
 /label_statistics/**/*.png
 /label_statistics/dataset/**/*.mat
-/label_manager/**/*.jpg
-/label_manager/**/*.png
+/label_manager/dataset/**/*.jpg
+/label_manager/dataset/**/*.png
 /label_manager/dataset/**/*.mat

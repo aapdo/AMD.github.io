@@ -46,7 +46,7 @@ def get_filtered_file_list(**directory_paths):
     return file_lists
 
 
-def update_new_img_name(df):
+def update_new_img_name(df, pid_range = 1587):
     def transform_name(row):
         origin_img_name = row['origin_img_name']
         new_img_name = row['new_img_name']
@@ -58,8 +58,10 @@ def update_new_img_name(df):
             return f"-1_{rest}"
         else:
             return f"{new_img_name:04d}_{rest}"
-
-    df['new_img_name'] = df.apply(transform_name, axis=1)
+    if pid_range == 1587:
+        df['new_img_name'] = df.apply(transform_name, axis=1)
+    else:
+        df['new_img_name'] = df['origin_img_name']
     return df
 
 def load_xlsx_and_init(file_path):
@@ -173,7 +175,7 @@ if __name__ == '__main__':
     if len(missing_in_img_name_list) > 0:
         print(missing_in_img_name_list)
         exit()
-    df = update_new_img_name(df)
+    df = update_new_img_name(df, 1501)
     
     train_data_set = set(file_lists['train'])
     test_data_set = set(file_lists['test'])
