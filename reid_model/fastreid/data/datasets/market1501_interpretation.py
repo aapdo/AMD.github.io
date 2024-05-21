@@ -79,7 +79,7 @@ class Market1501_Interpretation(ImageDataset):
 
         self.market_attribute_path = osp.join(self.data_dir, 'market_attribute.mat')
         self.attribute_dict_all = self.generate_attribute_dict(self.market_attribute_path,"market_attribute")
-
+        
         required_files = [
             self.data_dir,
             self.train_dir,
