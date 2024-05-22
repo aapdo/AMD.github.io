@@ -353,7 +353,6 @@ class ReidEvaluator(DatasetEvaluator):
 
 
     def visualize(self):
-        logger.info("interpretationreid/evaluation/reid_evaluation.py, visualize")
         if comm.get_world_size() > 1:
             assert False
             #TODO CXD
@@ -429,8 +428,6 @@ class ReidEvaluator(DatasetEvaluator):
             query_features, gallery_features = aqe(query_features, gallery_features, qe_time, qe_k, alpha)
             for i in range(self.len_att_list):
                 query_att_list[i],gallery_att_list[i] = aqe(query_att_list[i] , gallery_att_list[i], qe_time, qe_k, alpha)
-
-
 
         if self.cfg.TEST.METRIC == "cosine":
             query_features = F.normalize(query_features, dim=1)

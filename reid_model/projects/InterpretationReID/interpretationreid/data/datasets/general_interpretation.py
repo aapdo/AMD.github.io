@@ -16,30 +16,10 @@ import numpy as np
 from projects.InterpretationReID.interpretationreid.data.datasets.bases import ImageDataset
 from fastreid.data.datasets import DATASET_REGISTRY
 
-__all__ = ['Market1501_Interpretation']
-
-
-# transfer pedestrian attribute to representation in market_attribute.mat
-attr2rep = {'long hair': 'hair',
-            'T-shirt': 'up',
-            'coat': 'up',
-            'short of lower-body clothing': 'down',
-            'type of lower-body clothing (pants)': 'clothes',
-            'wearing hat': 'hat',
-            'carrying backpack': 'backpack',
-            'carrying bag': 'bag',
-            'carrying handbag': 'handbag'}
-
-# the list of empty pedestrian attributes in market_attribute.mat
-AttrEmpty = ['wearing boots', 'long coat']
-
-# the list of ambiguous pedestrian attributes in market_attribute.mat
-AttrAmbig = ['light color of shoes', 'opening an umbrella', 'pulling luggage',
-             'upbrown', 'uppink', 'uporange', 'up mixed colors',
-             'downred', 'downorange', 'down mixed colors']
+__all__ = ['general']
 
 @DATASET_REGISTRY.register()
-class Market1501_Interpretation(ImageDataset):
+class General_dataset(ImageDataset):
     """Market1501.
 
     Reference:
@@ -50,23 +30,17 @@ class Market1501_Interpretation(ImageDataset):
         - identities: 1501 (+1 for background).
         - images: 12936 (train) + 3368 (query) + 15913 (gallery).
     """
-    _junk_pids = [0, -1]
-    # dataset_dir = 'Market-1587-v24.05.19'
-    dataset_dir = ''
-    dataset_url = 'http://188.138.127.15:81/Datasets/Market-1501-v15.09.15.zip'
-    dataset_name = "market1501"
+
 
     def __init__(self, root='datasets', market1501_500k=False, **kwargs):
         self.logger = logging.getLogger('fastreid.' + __name__ + 'CORRECT_LABEL')
-        # self.root = osp.abspath(osp.expanduser(root))
         self.root = '/root/amd/reid_model/datasets'
         self.dataset_dir = osp.join(self.root, self.dataset_dir)
 
         # allow alternative directory structure
         self.data_dir = self.dataset_dir
-        # data_dir = osp.join(self.data_dir, 'Market-1587-v24.05.19')
         data_dir = osp.join(self.data_dir, 'Market-1501-v24.05.21_junk_false')
-        # data_dir = osp.join(self.data_dir, 'Market-1501-v24.05.21_junk_false')
+
         if osp.isdir(data_dir):
             self.data_dir = data_dir
         else:
@@ -77,13 +51,7 @@ class Market1501_Interpretation(ImageDataset):
         self.train_dir = osp.join(self.data_dir, 'bounding_box_train')
         self.query_dir = osp.join(self.data_dir, 'query')
         self.gallery_dir = osp.join(self.data_dir, 'bounding_box_test')
-        self.extra_gallery_dir = osp.join(self.data_dir, 'images')
-        self.market1501_500k = market1501_500k
 
-        # self.market_attribute_path = osp.join(self.data_dir, 'market_attribute.mat')
-        self.market_train_attr_path = osp.join(self.data_dir, 'train_attribute.csv')
-        self.market_test_attr_path = osp.join(self.data_dir, 'test_attribute.csv')
-        self.market_query_attr_path = osp.join(self.data_dir, 'query_attribute.csv')
         self.attribute_dict_all = self.generate_attribute_dict(self.market_train_attr_path, self.market_test_attr_path, self.market_query_attr_path,"market_attribute")
 
         required_files = [
@@ -95,8 +63,6 @@ class Market1501_Interpretation(ImageDataset):
             self.market_test_attr_path,
             self.market_query_attr_path
         ]
-        if self.market1501_500k:
-            required_files.append(self.extra_gallery_dir)
         self.check_before_run(required_files)
 
         train = self.process_dir(self.train_dir)
@@ -131,7 +97,7 @@ class Market1501_Interpretation(ImageDataset):
                 p_attribute = p_attribute.float()
             if is_train:
                 pid = self.dataset_name + "_" + str(pid)
-            data.append((img_path, pid, camid,p_attribute))
+            data.append((img_path, pid, camid, p_attribute))
 
         return data
 

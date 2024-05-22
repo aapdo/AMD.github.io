@@ -46,8 +46,6 @@ def default_argument_parser():
     parser = argparse.ArgumentParser(description="fastreid Training")
     #마켓 1501
     parser.add_argument("--config-file", default="/root/amd/reid_model/projects/InterpretationReID/configs/Market1501_Circle/circle_R50_ip.yml", metavar="FILE", help="path to config file")
-    #듀크 
-    #parser.add_argument("--config-file", default="/root/amd/reid_model/projects/InterpretationReID/configs/DukeMTMC_Circle/circle_R50_ip.yml", metavar="FILE", help="path to config file")
     parser.add_argument(
         "--resume",
         action="store_true",

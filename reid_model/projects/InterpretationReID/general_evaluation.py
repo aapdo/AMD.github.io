@@ -21,18 +21,10 @@ import projects.InterpretationReID.interpretationreid as PII
 from fastreid.utils.logger import setup_logger
 
 class Trainer(DefaultTrainer):
-    @classmethod
-    def build_train_loader(cls, cfg):
-        """
-        Returns:
-            iterable
-        It now calls :func:`fastreid.data.build_detection_train_loader`.
-        Overwrite it if you'd like a different data loader.
-        """
-        logger = logging.getLogger(__name__)
-        logger.info("Prepare training set")
-        return PII.add_build_reid_train_loader(cfg)
-
+    def __init__(cls, cfg, dataset_name):
+        cls.dataset_name = dataset_name
+        super.__init__(cfg)
+        
     @classmethod
     def build_test_loader(cls, cfg, dataset_name):
         """
@@ -40,7 +32,32 @@ class Trainer(DefaultTrainer):
             iterable
         It now calls :func:`fastreid.data.build_detection_test_loader`.
         Overwrite it if you'd like a different data loader.
+
+def add_build_reid_test_loader(cfg, dataset_name):
+    cfg = cfg.clone()
+    cfg.defrost()
+
+    dataset = DATASET_REGISTRY.get(dataset_name)(root=_root)
+    if comm.is_main_process():
+        dataset.show_test()
+    test_items = dataset.query + dataset.gallery
+
+    test_transforms = build_transforms(cfg, is_train=False)
+    test_set = CommDataset(test_items, test_transforms, relabel=False)
+
+    mini_batch_size = cfg.TEST.IMS_PER_BATCH // comm.get_world_size()
+    data_sampler = samplers.InferenceSampler(len(test_set))
+    batch_sampler = torch.utils.data.BatchSampler(data_sampler, mini_batch_size, False)
+    test_loader = DataLoader(
+        test_set,
+        batch_sampler=batch_sampler,
+        num_workers=0,  # save some memory
+        collate_fn=fast_batch_collator,
+        pin_memory=True,
+    )
+    return test_loader, len(dataset.query) , dataset.name_of_attribute()
         """
+
         return PII.add_build_reid_test_loader(cfg, dataset_name)
 
 
@@ -49,6 +66,12 @@ class Trainer(DefaultTrainer):
         if output_folder is None:
             output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
         return ReidEvaluator(cfg, num_query)
+    
+    @classmethod
+    def test(cls, cfg, model, evaluators=None):
+        data_loader, num_query , name_of_attribute = cls.build_test_loader(cfg, dataset_name)
+        evaluator = cls.build_evaluator(cfg, num_query=num_query)
+        print()
 
 
 def setup(args):
@@ -72,6 +95,8 @@ def main(args):
         model = Trainer.build_model(cfg)
 
         Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
+        
+        
 
         res = Trainer.test(cfg, model)
         return res
