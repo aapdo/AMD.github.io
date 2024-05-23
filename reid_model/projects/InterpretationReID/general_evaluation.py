@@ -39,7 +39,7 @@ class Trainer(DefaultTrainer):
         model = build_model(cfg)
         return model    
     @classmethod
-    def build_test_loader(cls, cfg, dataset_name):
+    def build_test_loader(cls, cfg, test_items):
         """
         Returns:
             iterable
@@ -53,7 +53,7 @@ class Trainer(DefaultTrainer):
         dataset_name 대신 dataset_path 를 이용해서 여기서 로드하는 방식으로 바꾸기.
         '''
 
-        return PII.add_build_reid_test_loader_general(cfg, cls.dataset_path)
+        return PII.add_build_reid_test_loader_general(cfg, test_items)
         
     @classmethod
     def build_evaluator(cls, cfg, num_query, output_folder=None):
@@ -71,7 +71,30 @@ class Trainer(DefaultTrainer):
         img_dataset = regist_dataset(cls.dataset_path)
         data_loader, num_query , name_of_attribute = cls.build_test_loader(cfg, img_dataset)
         evaluator = cls.build_evaluator(cfg, num_query=num_query)
-        print()
+        # model을 평가 모드로 전환
+        model.eval()
+
+        result = []
+
+        total = len(data_loader)
+        num_warmup = min(5, total - 1)
+        total_compute_time = 0
+        for idx, inputs in enumerate(data_loader):
+            
+            if idx == num_warmup:
+                # celery update 코드가 들어갈 공간
+                total_compute_time = 0
+            idx += 1
+            outputs_dict = model(inputs)
+            # feature 
+            outputs = outputs_dict["outputs"]
+            attrs = outputs_dict['att_heads']['cls_outputs'].clone().detach()
+            # 아래는 0.5가 넘는 경우 1로 판단하도록 만들고 append 하는 코드
+            # att_prec.append(torch.where(cls_outputs>0.5,torch.ones_like(cls_outputs),torch.zeros_like(cls_outputs)).cpu())
+            result.append((inputs["img_paths"], outputs.cpu(), attrs.cpu()))
+        print(result)
+            
+
 
 def regist_dataset(dataset_path):
     pid = 0
@@ -79,8 +102,15 @@ def regist_dataset(dataset_path):
     p_attr = torch.full((26,), 0)
     # ( '/root/amd/reid_model/datasezts/Market-1501-v24.05.21_junk_false/bounding_box_test/0330_c5s1_075798_04.jpg', 330, 4, tensor([-1., -1.,  1.,  1.,  1., -1., -1., -1., -1., -1., -1., -1., -1.,  1., 1., -1.,  1.,  1., -1., -1., -1., -1., -1.,  1., -1., -1.]) )
     dataset = []
-
-
+    img_paths = []
+    print(f"dataset_path: {dataset_path}")
+    for filename in os.listdir(dataset_path):
+        if filename.endswith('.jpg'):
+            img_paths.append(filename)
+            
+    
+    for img_path in img_paths:
+        dataset.append((dataset_path + "/" + img_path, pid, camid, p_attr))
     return dataset
 
 
@@ -119,5 +149,5 @@ def eval_query():
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
-    test_dataset_path = "/root/amd/reid_model/datasets/Market-1501-v24.05.21_junk_false" 
+    test_dataset_path = '/root/amd/reid_model/datasets/Market-1501-v24.05.21_junk_true/bounding_box_test'
     regist_new_dataset(args, test_dataset_path)

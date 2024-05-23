@@ -103,9 +103,6 @@ def add_build_reid_test_loader_general(cfg, test_items):
     name_of_attribute = ['backpack', 'bag', 'clothes', 'down', 'downblack', 'downblue', 'downbrown', 'downgray', 'downgreen', 'downpink', 'downpurple', 'downwhite', 'downyellow', 'gender', 'hair', 'handbag', 'hat', 'up', 'upblack', 'upblue', 'upgray', 'upgreen', 'uppurple', 'upred', 'upwhite', 'upyellow']
 
     test_transforms = build_transforms(cfg, is_train=False)
-
-    # 이 코드 수정해야함. 내부에서 pid, camid 가 들어가 있어서 빼야함.
-
     test_set = CommDataset(test_items, test_transforms, relabel=False)
 
     # 수정 필요 없음
@@ -120,7 +117,6 @@ def add_build_reid_test_loader_general(cfg, test_items):
         collate_fn=fast_batch_collator,
         pin_memory=True,
     )
-    print("start return")
     return test_loader, 0, name_of_attribute
 
 def trivial_batch_collator(batch):
