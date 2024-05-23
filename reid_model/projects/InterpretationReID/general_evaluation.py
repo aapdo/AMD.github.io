@@ -16,8 +16,10 @@ os.chdir("/root/amd/reid_model") #/home/workspace/로 이동하는것 방지
 from fastreid.config import get_cfg
 from projects.InterpretationReID.interpretationreid.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from fastreid.utils.checkpoint import Checkpointer
-from projects.InterpretationReID.interpretationreid.evaluation import ReidEvaluator_General
+from projects.InterpretationReID.interpretationreid.evaluation import ReidEvaluator_General, ReidEvaluator
 import projects.InterpretationReID.interpretationreid as PII
+from fastreid.modeling.meta_arch import build_model
+import torch
 from fastreid.utils.logger import setup_logger
 
 class Trainer(DefaultTrainer):
@@ -25,6 +27,17 @@ class Trainer(DefaultTrainer):
         cls.dataset_path = dataset_path
         super.__init__(cfg)
 
+    @classmethod
+    def build_model(cls, cfg, dataset_path):
+        """
+        Returns:
+            torch.nn.Module:
+        It now calls :func:`fastreid.modeling.build_model`.
+        Overwrite it if you'd like a different model.
+        """
+        cls.dataset_path = dataset_path
+        model = build_model(cfg)
+        return model    
     @classmethod
     def build_test_loader(cls, cfg, dataset_name):
         """
@@ -49,13 +62,26 @@ class Trainer(DefaultTrainer):
         # 현재 원래 코드와 동일한 상태.
         # output vector와 attribute 평가를 따로 저장하는 함수.
         # 저장해놓은 vector와 새로운 쿼리랑 비교해서 결과 뽑아주는 함수 만들어야함.
-        return ReidEvaluator_General(cfg, num_query)
+        
+        return ReidEvaluator(cfg, num_query)
+        # return ReidEvaluator_General(cfg, num_query)
     
     @classmethod
     def test(cls, cfg, model, evaluators=None):
-        data_loader, num_query , name_of_attribute = cls.build_test_loader(cfg, dataset_name)
+        img_dataset = regist_dataset(cls.dataset_path)
+        data_loader, num_query , name_of_attribute = cls.build_test_loader(cfg, img_dataset)
         evaluator = cls.build_evaluator(cfg, num_query=num_query)
         print()
+
+def regist_dataset(dataset_path):
+    pid = 0
+    camid = 0
+    p_attr = torch.full((26,), 0)
+    # ( '/root/amd/reid_model/datasezts/Market-1501-v24.05.21_junk_false/bounding_box_test/0330_c5s1_075798_04.jpg', 330, 4, tensor([-1., -1.,  1.,  1.,  1., -1., -1., -1., -1., -1., -1., -1., -1.,  1., 1., -1.,  1.,  1., -1., -1., -1., -1., -1.,  1., -1., -1.]) )
+    dataset = []
+
+
+    return dataset
 
 
 def setup(args):
@@ -70,27 +96,13 @@ def setup(args):
     default_setup(cfg, args)
     return cfg
 
-def main(args):
-    cfg = setup(args)
-
-    if args.eval_only:
-        cfg.defrost()
-        cfg.MODEL.BACKBONE.PRETRAIN = False
-        model = Trainer.build_model(cfg)
-
-        Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
-        
-        res = Trainer.test(cfg, model)
-        return res
-
-
-def regist_new_dataset(args):
+def regist_new_dataset(args, dataset_path):
     args = default_argument_parser().parse_args()
     cfg = setup(args)
 
     cfg.defrost()
     cfg.MODEL.BACKBONE.PRETRAIN = False
-    model = Trainer.build_model(cfg)
+    model = Trainer.build_model(cfg, dataset_path)
 
     Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
         
@@ -107,4 +119,5 @@ def eval_query():
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
-    regist_new_dataset(args)
+    test_dataset_path = "/root/amd/reid_model/datasets/Market-1501-v24.05.21_junk_false" 
+    regist_new_dataset(args, test_dataset_path)
