@@ -16,15 +16,15 @@ os.chdir("/root/amd/reid_model") #/home/workspace/로 이동하는것 방지
 from fastreid.config import get_cfg
 from projects.InterpretationReID.interpretationreid.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from fastreid.utils.checkpoint import Checkpointer
-from projects.InterpretationReID.interpretationreid.evaluation import ReidEvaluator
+from projects.InterpretationReID.interpretationreid.evaluation import ReidEvaluator_General
 import projects.InterpretationReID.interpretationreid as PII
 from fastreid.utils.logger import setup_logger
 
 class Trainer(DefaultTrainer):
-    def __init__(cls, cfg, dataset_name):
-        cls.dataset_name = dataset_name
+    def __init__(cls, cfg, dataset_path):
+        cls.dataset_path = dataset_path
         super.__init__(cfg)
-        
+
     @classmethod
     def build_test_loader(cls, cfg, dataset_name):
         """
@@ -33,39 +33,23 @@ class Trainer(DefaultTrainer):
         It now calls :func:`fastreid.data.build_detection_test_loader`.
         Overwrite it if you'd like a different data loader.
 
-def add_build_reid_test_loader(cfg, dataset_name):
-    cfg = cfg.clone()
-    cfg.defrost()
-
-    dataset = DATASET_REGISTRY.get(dataset_name)(root=_root)
-    if comm.is_main_process():
-        dataset.show_test()
-    test_items = dataset.query + dataset.gallery
-
-    test_transforms = build_transforms(cfg, is_train=False)
-    test_set = CommDataset(test_items, test_transforms, relabel=False)
-
-    mini_batch_size = cfg.TEST.IMS_PER_BATCH // comm.get_world_size()
-    data_sampler = samplers.InferenceSampler(len(test_set))
-    batch_sampler = torch.utils.data.BatchSampler(data_sampler, mini_batch_size, False)
-    test_loader = DataLoader(
-        test_set,
-        batch_sampler=batch_sampler,
-        num_workers=0,  # save some memory
-        collate_fn=fast_batch_collator,
-        pin_memory=True,
-    )
-    return test_loader, len(dataset.query) , dataset.name_of_attribute()
         """
 
-        return PII.add_build_reid_test_loader(cfg, dataset_name)
+        '''
+        원래 dataset_name 을 이용해서 add_build_reid_test_loader -> Market1501_Interpretation을 콜하는 방식인데
+        dataset_name 대신 dataset_path 를 이용해서 여기서 로드하는 방식으로 바꾸기.
+        '''
 
-
+        return PII.add_build_reid_test_loader_general(cfg, cls.dataset_path)
+        
     @classmethod
     def build_evaluator(cls, cfg, num_query, output_folder=None):
         if output_folder is None:
             output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
-        return ReidEvaluator(cfg, num_query)
+        # 현재 원래 코드와 동일한 상태.
+        # output vector와 attribute 평가를 따로 저장하는 함수.
+        # 저장해놓은 vector와 새로운 쿼리랑 비교해서 결과 뽑아주는 함수 만들어야함.
+        return ReidEvaluator_General(cfg, num_query)
     
     @classmethod
     def test(cls, cfg, model, evaluators=None):
@@ -96,43 +80,31 @@ def main(args):
 
         Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
         
-        
-
         res = Trainer.test(cfg, model)
         return res
 
-    trainer = Trainer(cfg)
 
+def regist_new_dataset(args):
+    args = default_argument_parser().parse_args()
+    cfg = setup(args)
 
-    trainer.resume_or_load(resume=args.resume)
+    cfg.defrost()
+    cfg.MODEL.BACKBONE.PRETRAIN = False
+    model = Trainer.build_model(cfg)
 
-    if cfg.INTERPRETATION.PRETRAIN_MODEL:
-        #print("trainer.load_n_or_not()")
-        print("run load_n_or_not in main")
-        trainer.load_n_or_not()
-        #print("load success")
-    #print(trainer.model)
-    #for p in trainer.model.backbone_1.parameters():
-        #p.requires_grad=False
-    #for p in trainer.model.backbone_2.parameters():
-        #p.requires_grad=False
-    #for p in trainer.model.heads.parameters(): #.module
-        #p.requires_grad=False
-    #print("trainer.train()")
-    #print(cfg)
-    #print(trainer._hooks)
-    #setup_logger()
-    return trainer.train()
+    Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
+        
+    res = Trainer.test(cfg, model)
+    return res
 
+def eval_query():
+    print()
+    # 모델에 사진 하나 넣고 벡터, 속성 평가 값만 받아오도록 만들고
+    # 그걸 리턴해줌. (샐러리 task로)
+    # 샐러리 task에서는 데이터베이스 조회해서 갤러리에 있는 애들과 dist 측정하고 
+    # 그 중 가장 유사한 10개 뱉어줌. 
 
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
-    launch(
-        main,
-        args.num_gpus,
-        num_machines=args.num_machines,
-        machine_rank=args.machine_rank,
-        dist_url=args.dist_url,
-        args=(args,),
-    )
+    regist_new_dataset(args)

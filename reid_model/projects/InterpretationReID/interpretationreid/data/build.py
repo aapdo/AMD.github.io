@@ -95,6 +95,30 @@ def add_build_reid_test_loader(cfg, dataset_name):
     )
     return test_loader, len(dataset.query) , dataset.name_of_attribute()
 
+def add_build_reid_test_loader_general(cfg, dataset_path):
+    cfg = cfg.clone()
+    cfg.defrost()
+
+    # dataset_path 에서 가져오는걸 해야함.
+    test_items = dataset_path
+
+    test_transforms = build_transforms(cfg, is_train=False)
+
+    # 이 코드 수정해야함. 내부에서 pid, camid 가 들어가 있어서 빼야함.
+    test_set = CommDataset(test_items, test_transforms, relabel=False)
+
+    # 수정 필요 없음
+    mini_batch_size = cfg.TEST.IMS_PER_BATCH // comm.get_world_size()
+    data_sampler = samplers.InferenceSampler(len(test_set))
+    batch_sampler = torch.utils.data.BatchSampler(data_sampler, mini_batch_size, False)
+    test_loader = DataLoader(
+        test_set,
+        batch_sampler=batch_sampler,
+        num_workers=0,  # save some memory
+        collate_fn=fast_batch_collator,
+        pin_memory=True,
+    )
+    return test_loader, len(dataset.query) , dataset.name_of_attribute()
 
 def trivial_batch_collator(batch):
     """

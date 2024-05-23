@@ -32,7 +32,7 @@ import csv
 logger = logging.getLogger(__name__)
 
 
-class ReidEvaluator(DatasetEvaluator):
+class ReidEvaluator_General(DatasetEvaluator):
     def __init__(self, cfg, num_query, output_dir=None):
         self.cfg = cfg
         self._num_query = num_query
@@ -599,14 +599,13 @@ class ReidEvaluator(DatasetEvaluator):
 
         self._results = OrderedDict()
 
-        # False
         if self.cfg.TEST.AQE.ENABLED:
             self.logger.info("Test with AQE setting")
             qe_time = self.cfg.TEST.AQE.QE_TIME
             qe_k = self.cfg.TEST.AQE.QE_K
             alpha = self.cfg.TEST.AQE.ALPHA
             query_features, gallery_features = aqe(query_features, gallery_features, qe_time, qe_k, alpha)
-        # False
+
         if self.cfg.TEST.METRIC == "cosine":
             query_features = F.normalize(query_features, dim=1)
             gallery_features = F.normalize(gallery_features, dim=1)
@@ -632,7 +631,7 @@ class ReidEvaluator(DatasetEvaluator):
             elif q_att == 3:
                 bias_dist, _ = bias_dist.max(-1)  # n x m
             elif q_att == 4:
-                # att_prec: heads 의 cls_outputs(속성 분류 값)이 0.5 이상인 경우 1로 되어 있는 값.
+
                 gallery_fake_attributes = torch.cat(self.att_prec,dim=0)[self._num_query:]
                 dist_fake_stack = query_real_attributes.unsqueeze(1) * gallery_fake_attributes.unsqueeze(
                     0)  # -1 means different, 1 means same
@@ -644,7 +643,7 @@ class ReidEvaluator(DatasetEvaluator):
                 assert False
 
             bias_dist = (1.0+p_att*bias_dist)*dist
-        # False
+
         if  self.cfg.TEST.RERANK.ENABLED:
             self.logger.info("Test with rerank setting")
             k1 = self.cfg.TEST.RERANK.K1
@@ -674,7 +673,6 @@ class ReidEvaluator(DatasetEvaluator):
         self._results['New_mAP'] = mAP
         self._results['New_mINP'] = mINP
 
-        # False
         if self.cfg.TEST.ROC_ENABLED:
             scores, labels = evaluate_roc(dist, query_features, gallery_features,
                                           query_pids, gallery_pids, query_camids, gallery_camids)
@@ -721,6 +719,7 @@ class ReidEvaluator(DatasetEvaluator):
 
         dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, gallery_features)
 
+        # False
         if self.cfg.TEST.RERANK.ENABLED:
             self.logger.info("Test with rerank setting")
             k1 = self.cfg.TEST.RERANK.K1
@@ -747,6 +746,7 @@ class ReidEvaluator(DatasetEvaluator):
         self._results['mAP'] = mAP
         self._results['mINP'] = mINP
 
+        # False
         if self.cfg.TEST.ROC_ENABLED:
             scores, labels = evaluate_roc(dist, query_features, gallery_features,
                                           query_pids, gallery_pids, query_camids, gallery_camids)
@@ -758,6 +758,20 @@ class ReidEvaluator(DatasetEvaluator):
 
         return copy.deepcopy(self._results)
 
+    def save_output(self):
+        """
+        outs:
+        {
+        "outputs": outputs,  -> tensor : n x 2048
+        "att_list": att_list, -> [tensor, tensor, ... tensor ] : n x 2048
+        "feature_mask":feature_mask, -> tensor : n x 23 x 7 x 7
+        "fake_attributes": fake_attributes,
+        "real_attributes": real_attributes
+
+        }
+        구현해야 하는 것. fake_attribute 랑 out['outputs] 를 저장해야함
+        """
+        print()
 
 def visiual_average_att(att_name, feature_mask, real_attributes,img_size=(384, 192), output_dir="./",positive=True):
 
@@ -940,3 +954,4 @@ def visualization_savefig(path_names, att_names, imgs, att_mask, feature_distanc
     torch.save(feature_distance,os.path.join(output_dir, path_names[0].replace(".", "_") + ".pth"))
     plt.clf()
     plt.close()
+

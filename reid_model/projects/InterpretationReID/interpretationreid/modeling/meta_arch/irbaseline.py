@@ -253,7 +253,7 @@ class IRBaseline(nn.Module):
                 dict_heads = self.heads(features * feature_mask[:, i:i+1, :, :], targets,self.training)
 
                 att_heads = self.att_heads(feature_att,targets,self.training)
-
+                
 
                 #DistributedDataParallel Training , find_unused_parameters=True
                 unused_param = None
@@ -271,8 +271,6 @@ class IRBaseline(nn.Module):
                 att_list.append(dict_heads)
 
             outputs = self.heads(features, targets,self.training)
-
-
 
             return {
                 "outputs": outputs,
