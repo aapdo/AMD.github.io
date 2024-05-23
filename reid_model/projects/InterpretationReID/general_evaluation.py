@@ -79,19 +79,23 @@ class Trainer(DefaultTrainer):
         total = len(data_loader)
         num_warmup = min(5, total - 1)
         total_compute_time = 0
-        for idx, inputs in enumerate(data_loader):
-            
-            if idx == num_warmup:
-                # celery update 코드가 들어갈 공간
-                total_compute_time = 0
-            idx += 1
-            outputs_dict = model(inputs)
-            # feature 
-            outputs = outputs_dict["outputs"]
-            attrs = outputs_dict['att_heads']['cls_outputs'].clone().detach()
-            # 아래는 0.5가 넘는 경우 1로 판단하도록 만들고 append 하는 코드
-            # att_prec.append(torch.where(cls_outputs>0.5,torch.ones_like(cls_outputs),torch.zeros_like(cls_outputs)).cpu())
-            result.append((inputs["img_paths"], outputs.cpu(), attrs.cpu()))
+        with torch.no_grad():
+            for idx, inputs in enumerate(data_loader):
+                if idx == num_warmup:
+                    # celery update 코드가 들어갈 공간
+                    total_compute_time = 0
+
+                idx += 1
+                outputs_dict = model(inputs)
+                # feature 
+                outputs = outputs_dict["outputs"]
+                attrs = outputs_dict['att_heads']['cls_outputs'].clone().detach()
+                # 아래는 0.5가 넘는 경우 1로 판단하도록 만들고 append 하는 코드
+                # att_prec.append(torch.where(cls_outputs>0.5,torch.ones_like(cls_outputs),torch.zeros_like(cls_outputs)).cpu())
+                result.append((inputs["img_paths"], outputs.cpu(), attrs.cpu()))
+                
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
         print(result)
             
 
