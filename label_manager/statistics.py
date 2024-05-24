@@ -65,6 +65,7 @@ def get_correct_origin_diff(correct_label_df, mat_attribute_df):
     '''
     기존 라벨링 데이터와 수정한 라벨링 데이터 사이에서 얼마나 수정되었는지 계산하는 함수
     '''
+    diff_pid_cnt = {str(i).zfill(4): 0 for i in range(1, 1502)}
     pattern = r'^.{4}'
     # 전체 라벨 수
     total_label_number = 0
@@ -97,11 +98,14 @@ def get_correct_origin_diff(correct_label_df, mat_attribute_df):
                 total_flag = True
         if total_flag:
             cnt_all_attr_diff += 1
+            diff_pid_cnt[pid] += 1
         if up_flag:
             cnt_upper_diff += 1
         if down_flag:
             cnt_lower_diff += 1
-    return total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff
+    diff_pid_cnt = {k: v for k, v in diff_pid_cnt.items() if v != 0}
+
+    return total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff, diff_pid_cnt
 
 def draw_pie_chart(labels, sizes, title, chart_name):
     fig, ax = plt.subplots()
@@ -298,11 +302,25 @@ if __name__ == '__main__':
         'upyellow': 'up-yellow',
     }, inplace=True)
 
-    total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff = get_correct_origin_diff(correct_label_df, mat_attribute)
+    total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff, diff_pid_cnt = get_correct_origin_diff(correct_label_df, mat_attribute)
 
     draw_modified_ratio_pie_chart(total_label_number, cnt_all_attr_diff, cnt_upper_diff, cnt_lower_diff)
 
     print("전체 검토한 사진: ", total_label_number)
     print("수정한 사진의 수: ", cnt_all_attr_diff)
 
+    dict1 = {k: v for k, v in diff_pid_cnt.items() if 1 <= int(k) <= 500}
+    dict2 = {k: v for k, v in diff_pid_cnt.items() if 501 <= int(k) <= 1000}
+    dict3 = {k: v for k, v in diff_pid_cnt.items() if 1001 <= int(k) <= 1501}
+
+    sum_dict1 = sum(dict1.values())
+    sum_dict2 = sum(dict2.values())
+    sum_dict3 = sum(dict3.values())
+
+    print("Sum of values in dict1:", sum_dict1)
+    print("Sum of values in dict2:", sum_dict2)
+    print("Sum of values in dict3:", sum_dict3)
+    total = sum_dict1 + sum_dict2 + sum_dict3
+    print(f"total: {total}")
+    
     draw_bar_chat_attribute_distribution(total_label_number, correct_label_df)

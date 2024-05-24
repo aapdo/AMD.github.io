@@ -93,7 +93,7 @@ class Trainer(DefaultTrainer):
                 # 아래는 0.5가 넘는 경우 1로 판단하도록 만들고 append 하는 코드
                 # att_prec.append(torch.where(cls_outputs>0.5,torch.ones_like(cls_outputs),torch.zeros_like(cls_outputs)).cpu())
                 result.append((inputs["img_paths"], outputs.cpu(), attrs.cpu()))
-                
+
                 if torch.cuda.is_available():
                     torch.cuda.synchronize()
         print(result)
@@ -111,7 +111,6 @@ def regist_dataset(dataset_path):
     for filename in os.listdir(dataset_path):
         if filename.endswith('.jpg'):
             img_paths.append(filename)
-            
     
     for img_path in img_paths:
         dataset.append((dataset_path + "/" + img_path, pid, camid, p_attr))
