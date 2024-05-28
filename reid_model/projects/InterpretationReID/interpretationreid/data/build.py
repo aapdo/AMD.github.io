@@ -79,9 +79,6 @@ def add_build_reid_test_loader(cfg, dataset_name):
     if comm.is_main_process():
         dataset.show_test()
     test_items = dataset.query + dataset.gallery
-    print(f"test items: {dataset.gallery}")
-    print(f"dataset.name_of_attribute(): {dataset.name_of_attribute()}")
-    exit()
     test_transforms = build_transforms(cfg, is_train=False)
     test_set = CommDataset(test_items, test_transforms, relabel=False)
 

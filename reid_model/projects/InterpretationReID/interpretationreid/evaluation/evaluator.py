@@ -156,7 +156,7 @@ def inference_on_dataset(model, data_loader, evaluator,name_of_attribute=None):
 
 
     #TODO CXD Visualizer
-    dist_list_stack,query_real_attributes, gallery_real_attributes = evaluator.visualize() # n x m x NUM_ATT
+    dist_list_stack, query_real_attributes, gallery_real_attributes = evaluator.visualize() # n x m x NUM_ATT
     dict_q_att = {3:'Reweight with the most contributed attribute, unstable operation!', 4:"Reweight with the most contributed exclusive attribute, stable operation! "}
     for list_q_att in list([3,4]):
         logger.info("*" * 50)
