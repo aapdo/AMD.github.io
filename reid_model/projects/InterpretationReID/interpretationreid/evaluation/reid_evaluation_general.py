@@ -101,7 +101,6 @@ class ReidEvaluator_General(DatasetEvaluator):
         "feature_mask":feature_mask, -> tensor : n x 23 x 7 x 7
         "fake_attributes": fake_attributes,
         "real_attributes": real_attributes
-
         }
 
 
@@ -358,14 +357,6 @@ class ReidEvaluator_General(DatasetEvaluator):
             #TODO CXD
         else:
             features = self.features
-
-            # pids = self.pids
-            # camids = self.camids
-
-            # for visualize
-            if self.cfg.VISUAL.OPEN:
-                imgs_path = self.imgs_path
-                imgs = self.imgs
             real_attributes = self.real_attributes
             fake_attributes = self.fake_attributes
             key_attribute = self.key_attribute
@@ -376,17 +367,14 @@ class ReidEvaluator_General(DatasetEvaluator):
 
         #att_names: [str,...,str]
         choose_att_names = key_attribute
-        if self.cfg.VISUAL.OPEN:
-            imgs = torch.cat(imgs, dim=0)
+
         features = torch.cat(features, dim=0)
         feature_mask = torch.cat(feature_mask,dim=0)
         real_attributes = torch.cat(real_attributes, dim=0)
         #fake_attributes = torch.cat(fake_attributes, dim=0)
         fake_attributes = torch.zeros_like(real_attributes) # adapt
-        if self.cfg.VISUAL.OPEN:
-            _, _, h_imgs, w_imgs = imgs.size()
-        else:
-            h_imgs, w_imgs = 384,192
+
+        h_imgs, w_imgs = 384,192
 
 
 
@@ -394,9 +382,7 @@ class ReidEvaluator_General(DatasetEvaluator):
         query_features = features[:self._num_query]
         # query_pids = np.asarray(pids[:self._num_query])
         # query_camids = np.asarray(camids[:self._num_query])
-        if self.cfg.VISUAL.OPEN:
-            query_imgs_path  = imgs_path[:self._num_query]
-            query_imgs = imgs[:self._num_query]
+
         query_real_attributes = real_attributes[:self._num_query]
         query_fake_attributes = fake_attributes[:self._num_query]
         query_feature_mask = feature_mask[:self._num_query]
@@ -406,11 +392,7 @@ class ReidEvaluator_General(DatasetEvaluator):
 
         # gallery features, person ids and camera ids
         gallery_features = features[self._num_query:]
-        # gallery_pids = np.asarray(pids[self._num_query:])
-        # gallery_camids = np.asarray(camids[self._num_query:])
-        if self.cfg.VISUAL.OPEN:
-            gallery_imgs_path = imgs_path[self._num_query:]
-            gallery_imgs = imgs[self._num_query:]
+  
         gallery_real_attributes = real_attributes[self._num_query:]
         gallery_fake_attributes = fake_attributes[self._num_query:]
         gallery_feature_mask = feature_mask[self._num_query:]
@@ -418,23 +400,6 @@ class ReidEvaluator_General(DatasetEvaluator):
         for i in range(self.len_att_list):
             gallery_att_list.append(att_list[i][self._num_query:])
 
-
-        # Initialize
-        if self.cfg.TEST.AQE.ENABLED:
-            self.logger.info("Test with AQE setting")
-            qe_time = self.cfg.TEST.AQE.QE_TIME
-            qe_k = self.cfg.TEST.AQE.QE_K
-            alpha = self.cfg.TEST.AQE.ALPHA
-            query_features, gallery_features = aqe(query_features, gallery_features, qe_time, qe_k, alpha)
-            for i in range(self.len_att_list):
-                query_att_list[i],gallery_att_list[i] = aqe(query_att_list[i] , gallery_att_list[i], qe_time, qe_k, alpha)
-
-        if self.cfg.TEST.METRIC == "cosine":
-            query_features = F.normalize(query_features, dim=1)
-            gallery_features = F.normalize(gallery_features, dim=1)
-            for i in range(self.len_att_list):
-                query_att_list[i] = F.normalize(query_att_list[i], dim=1)
-                gallery_att_list[i] = F.normalize(gallery_att_list[i], dim=1)
 
         dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, gallery_features,out_is_torch=True) # n (query) x m
         n,m = dist.size()
@@ -706,37 +671,12 @@ class ReidEvaluator_General(DatasetEvaluator):
 
         self._results = OrderedDict()
 
-        if self.cfg.TEST.AQE.ENABLED:
-            self.logger.info("Test with AQE setting")
-            qe_time = self.cfg.TEST.AQE.QE_TIME
-            qe_k = self.cfg.TEST.AQE.QE_K
-            alpha = self.cfg.TEST.AQE.ALPHA
-            query_features, gallery_features = aqe(query_features, gallery_features, qe_time, qe_k, alpha)
-
-        if self.cfg.TEST.METRIC == "cosine":
-            query_features = F.normalize(query_features, dim=1)
-            gallery_features = F.normalize(gallery_features, dim=1)
-
         dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, gallery_features)
 
-        # False
-        if self.cfg.TEST.RERANK.ENABLED:
-            self.logger.info("Test with rerank setting")
-            k1 = self.cfg.TEST.RERANK.K1
-            k2 = self.cfg.TEST.RERANK.K2
-            lambda_value = self.cfg.TEST.RERANK.LAMBDA
-            q_q_dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, query_features)
-            g_g_dist = self.cal_dist(self.cfg.TEST.METRIC, gallery_features, gallery_features)
-            re_dist = re_ranking(dist, q_q_dist, g_g_dist, k1, k2, lambda_value)
-            query_features = query_features.numpy()
-            gallery_features = gallery_features.numpy()
-            cmc, all_AP, all_INP = evaluate_rank(re_dist, query_features, gallery_features,
-                                                 query_pids, gallery_pids, query_camids,
-                                                 gallery_camids, use_distmat=True)
-        else:
-            query_features = query_features.numpy()
-            gallery_features = gallery_features.numpy()
-            cmc, all_AP, all_INP = evaluate_rank(dist, query_features, gallery_features,
+ 
+        query_features = query_features.numpy()
+        gallery_features = gallery_features.numpy()
+        cmc, all_AP, all_INP = evaluate_rank(dist, query_features, gallery_features,
                                                  query_pids, gallery_pids, query_camids, gallery_camids,
                                                  use_distmat=False)
         mAP = np.mean(all_AP)
@@ -746,17 +686,51 @@ class ReidEvaluator_General(DatasetEvaluator):
         self._results['mAP'] = mAP
         self._results['mINP'] = mINP
 
-        # False
-        if self.cfg.TEST.ROC_ENABLED:
-            scores, labels = evaluate_roc(dist, query_features, gallery_features,
-                                          query_pids, gallery_pids, query_camids, gallery_camids)
-            fprs, tprs, thres = metrics.roc_curve(labels, scores)
-
-            for fpr in [1e-4, 1e-3, 1e-2]:
-                ind = np.argmin(np.abs(fprs - fpr))
-                self._results["TPR@FPR={:.0e}".format(fpr)] = tprs[ind]
-
         return copy.deepcopy(self._results)
+    
+    def dist_attr_stack(self):
+        if comm.get_world_size() > 1:
+            assert False
+            #TODO CXD
+        else:
+            features = self.features
+            fake_attributes = self.fake_attributes
+            key_attribute = self.key_attribute
+            att_list = self.att_list
+            feature_mask = self.feature_mask
+
+
+
+  
+        query_att_list = []
+        for i in range(self.len_att_list):
+            query_att_list.append(att_list[i][:self._num_query])
+
+        gallery_att_list = []
+        for i in range(self.len_att_list):
+            gallery_att_list.append(att_list[i][self._num_query:])
+
+        dist_list = [] # [tensor ,..., tensor] -> tensor -> n x m
+        for i in range(self.len_att_list):
+            dist_list.append(self.cal_dist(self.cfg.TEST.METRIC, query_att_list[i] , gallery_att_list[i],out_is_torch=True))
+
+        #calculate
+        dist_list_stack = torch.stack(dist_list,dim=-1) # n x m x NUM_ATT
+        return dist_list_stack
+    
+        # 20240509
+        '''
+        query_count=0
+        for i in self.imgs_path: #self.imgs_path는 쿼리와 갤러리 이미지의 파일명이 모두 포함된 이미지 리스트임
+            if "query" in i:
+                result_dist_mat={}
+                query_filename= "/root/amd/reid_model/output/"+ i.split('/')[-1]
+                query_filename=query_filename.split(".")[0]
+                result_dist_mat['dist_total']=dist[query_count].numpy()
+                result_dist_mat['dist_att']=(dist_list_stack / dist_list_stack.sum(-1).unsqueeze(-1))[query_count].numpy()
+                scipy.io.savemat(f'{query_filename}.mat',result_dist_mat)
+                query_count+=1
+        '''
 
     def save_output(self):
         """

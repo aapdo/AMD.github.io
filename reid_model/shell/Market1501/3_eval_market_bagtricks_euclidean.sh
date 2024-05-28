@@ -6,7 +6,7 @@ cd amd/reid_model
 gpus='0'
 
 #train
-CUDA_VISIBLE_DEVICES=$gpus python3 ./projects/InterpretationReID/train_net.py --config-file ./projects/InterpretationReID/configs/Market1501_Circle/circle_R50_ip.yml --eval-only MODEL.WEIGHTS ./pretrain_models/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth MODEL.DEVICE "cuda:0"
+CUDA_VISIBLE_DEVICES=$gpus python3 ./projects/InterpretationReID/train_net.py --config-file ./projects/InterpretationReID/configs/Market1501_Circle/circle_R50_ip_eval_only.yml --eval-only MODEL.WEIGHTS ./pretrain_models/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth MODEL.DEVICE "cuda:0"
 
 #python3 ./projects/InterpretationReID/train_net.py  --config-file ./projects/InterpretationReID/configs/Market1501_Circle/circle_R50_ip.yml --eval-only MODEL.WEIGHTS /export/home/cxd/fast-reid-interpretation-1008/logs/market1501/bagtricks_circle_R50/model_final.pth MODEL.DEVICE "cuda:0"   MODEL.BACKBONE.WITH_NL  False   TEST.METRIC   "euclidean"   TEST.EVAL_PERIOD 10 
 

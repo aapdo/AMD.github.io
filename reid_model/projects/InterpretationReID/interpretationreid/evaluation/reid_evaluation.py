@@ -419,7 +419,7 @@ class ReidEvaluator(DatasetEvaluator):
             gallery_att_list.append(att_list[i][self._num_query:])
 
 
-        # Initialize
+        # Initialize False
         if self.cfg.TEST.AQE.ENABLED:
             self.logger.info("Test with AQE setting")
             qe_time = self.cfg.TEST.AQE.QE_TIME
@@ -428,7 +428,7 @@ class ReidEvaluator(DatasetEvaluator):
             query_features, gallery_features = aqe(query_features, gallery_features, qe_time, qe_k, alpha)
             for i in range(self.len_att_list):
                 query_att_list[i],gallery_att_list[i] = aqe(query_att_list[i] , gallery_att_list[i], qe_time, qe_k, alpha)
-
+        # False
         if self.cfg.TEST.METRIC == "cosine":
             query_features = F.normalize(query_features, dim=1)
             gallery_features = F.normalize(gallery_features, dim=1)
@@ -708,19 +708,21 @@ class ReidEvaluator(DatasetEvaluator):
 
         self._results = OrderedDict()
 
+        # False
         if self.cfg.TEST.AQE.ENABLED:
             self.logger.info("Test with AQE setting")
             qe_time = self.cfg.TEST.AQE.QE_TIME
             qe_k = self.cfg.TEST.AQE.QE_K
             alpha = self.cfg.TEST.AQE.ALPHA
             query_features, gallery_features = aqe(query_features, gallery_features, qe_time, qe_k, alpha)
-
+        # False
         if self.cfg.TEST.METRIC == "cosine":
             query_features = F.normalize(query_features, dim=1)
             gallery_features = F.normalize(gallery_features, dim=1)
 
         dist = self.cal_dist(self.cfg.TEST.METRIC, query_features, gallery_features)
 
+        # False
         if self.cfg.TEST.RERANK.ENABLED:
             self.logger.info("Test with rerank setting")
             k1 = self.cfg.TEST.RERANK.K1
@@ -747,6 +749,7 @@ class ReidEvaluator(DatasetEvaluator):
         self._results['mAP'] = mAP
         self._results['mINP'] = mINP
 
+        # False
         if self.cfg.TEST.ROC_ENABLED:
             scores, labels = evaluate_roc(dist, query_features, gallery_features,
                                           query_pids, gallery_pids, query_camids, gallery_camids)
